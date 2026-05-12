@@ -14,10 +14,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: false,
   },
-  turbopack: {
-    root: 'C:/Users/ganar/dev/portfolio',
-  },
-  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei', 'shadergradient'],
+transpilePackages: ['three', '@react-three/fiber', '@react-three/drei', 'shadergradient'],
 }
 
 export default withMDX(nextConfig)
