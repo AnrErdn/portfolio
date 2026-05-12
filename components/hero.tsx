@@ -179,7 +179,7 @@ export default function Hero({ ready = false }: HeroProps) {
             ...phaseIn(phase, 2),
           }}
         >
-          <ScrambleText text="PORTFOLIO // ANAR-ERDENE GANTULGA" trigger={phase >= 2} duration={1400} />
+          <ScrambleText text="PORTFOLIO // ANAR-ERDENE GANTULGA" trigger={phase >= 2} duration={2800} />
         </p>
 
         {/* ── The name — fills the viewport ── */}
@@ -246,9 +246,9 @@ export default function Hero({ ready = false }: HeroProps) {
                   ...phaseIn(phase, 6),
                 }}
               >
-                <ScrambleText text="Where design thinking" trigger={phase >= 6} duration={1600} />
+                <ScrambleText text="Where design thinking" trigger={phase >= 6} duration={3000} />
                 <br />
-                <ScrambleText text="meets production code." trigger={phase >= 6} delay={200} duration={1600} />
+                <ScrambleText text="meets production code." trigger={phase >= 6} delay={300} duration={3000} />
               </h1>
 
               <p
@@ -262,7 +262,7 @@ export default function Hero({ ready = false }: HeroProps) {
                   ...phaseIn(phase, 7),
                 }}
               >
-                <ScrambleText text="UX/UI designer and frontend developer — building products that are beautiful to use and solid to ship." trigger={phase >= 7} duration={2000} />
+                <ScrambleText text="UX/UI designer and frontend developer — building products that are beautiful to use and solid to ship." trigger={phase >= 7} duration={4000} />
               </p>
 
               {/* CTAs */}

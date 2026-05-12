@@ -20,7 +20,7 @@ export default function SectionLabel({ label, description }: SectionLabelProps) 
         marginBottom: '12px',
       }}
     >
-      <ScrambleText text={text} duration={1200} />
+      <ScrambleText text={text} />
     </p>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import FadeUp from '@/components/fade-up'
+import { Typewriter } from '@/components/ui/typewriter'
 
 export default function Contact() {
   return (
@@ -61,7 +62,24 @@ export default function Contact() {
               marginBottom: '16px',
             }}
           >
-            Let&apos;s build something.
+            <Typewriter
+                text={["Let's build something.", "Let's ship great products.", "Let's create together."]}
+                speed={65}
+                deleteSpeed={35}
+                waitTime={2200}
+                initialDelay={400}
+                loop={true}
+                cursorChar="_"
+                cursorClassName=""
+                cursorAnimationVariants={{
+                  initial: { opacity: 0 },
+                  animate: {
+                    opacity: 1,
+                    transition: { duration: 0.01, repeat: Infinity, repeatDelay: 0.45, repeatType: 'reverse' },
+                  },
+                }}
+                className="text-inherit"
+              />
           </h2>
 
           {/* Subtext */}
