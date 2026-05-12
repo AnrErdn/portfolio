@@ -19,7 +19,7 @@ export default function ScrambleText({
   text,
   trigger,
   delay = 0,
-  duration = 750,
+  duration = 1500,
   className,
   style,
 }: Props) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import BracketCorners from '@/components/hud/bracket-corners'
 import ScrambleText from '@/components/scramble-text'
+import { MatrixText } from '@/components/ui/matrix-text'
 
 const ShaderGradientCanvas = dynamic(
   async () => {
@@ -178,7 +179,7 @@ export default function Hero({ ready = false }: HeroProps) {
             ...phaseIn(phase, 2),
           }}
         >
-          <ScrambleText text="PORTFOLIO // ANAR-ERDENE GANTULGA" trigger={phase >= 2} duration={700} />
+          <ScrambleText text="PORTFOLIO // ANAR-ERDENE GANTULGA" trigger={phase >= 2} duration={1400} />
         </p>
 
         {/* ── The name — fills the viewport ── */}
@@ -195,7 +196,7 @@ export default function Hero({ ready = false }: HeroProps) {
               ...phaseIn(phase, 3),
             }}
           >
-            ANAR-ERDENE
+            <MatrixText text="ANAR-ERDENE" trigger={phase >= 3} letterInterval={90} letterAnimationDuration={450} />
           </div>
           <div
             className="hero-name-2"
@@ -210,7 +211,7 @@ export default function Hero({ ready = false }: HeroProps) {
               ...phaseIn(phase, 4),
             }}
           >
-            GANTULGA
+            <MatrixText text="GANTULGA" trigger={phase >= 4} initialDelay={150} letterInterval={110} letterAnimationDuration={450} />
           </div>
         </div>
 
@@ -245,9 +246,9 @@ export default function Hero({ ready = false }: HeroProps) {
                   ...phaseIn(phase, 6),
                 }}
               >
-                <ScrambleText text="Where design thinking" trigger={phase >= 6} duration={800} />
+                <ScrambleText text="Where design thinking" trigger={phase >= 6} duration={1600} />
                 <br />
-                <ScrambleText text="meets production code." trigger={phase >= 6} delay={120} duration={800} />
+                <ScrambleText text="meets production code." trigger={phase >= 6} delay={200} duration={1600} />
               </h1>
 
               <p
@@ -261,7 +262,7 @@ export default function Hero({ ready = false }: HeroProps) {
                   ...phaseIn(phase, 7),
                 }}
               >
-                <ScrambleText text="UX/UI designer and frontend developer — building products that are beautiful to use and solid to ship." trigger={phase >= 7} duration={1000} />
+                <ScrambleText text="UX/UI designer and frontend developer — building products that are beautiful to use and solid to ship." trigger={phase >= 7} duration={2000} />
               </p>
 
               {/* CTAs */}
