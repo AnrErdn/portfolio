@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const NAV_LINKS = [
   { label: 'Work', href: '#work' },
@@ -10,24 +10,8 @@ const NAV_LINKS = [
 ]
 
 export default function Nav() {
-  const [hidden, setHidden] = useState(false)
   const [activeSection, setActiveSection] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
-  const lastScrollY = useRef(0)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY
-      if (currentY > 80) {
-        setHidden(currentY > lastScrollY.current)
-      } else {
-        setHidden(false)
-      }
-      lastScrollY.current = currentY
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   useEffect(() => {
     const sections = document.querySelectorAll('section[id]')
@@ -81,8 +65,7 @@ export default function Nav() {
           position: 'fixed',
           top: '22px',
           left: '50%',
-          transform: `translateX(-50%) translateY(${hidden ? '-160%' : '0'})`,
-          transition: 'transform 320ms cubic-bezier(0.0,0.0,0.2,1.0)',
+          transform: 'translateX(-50%)',
           zIndex: 100,
           display: 'flex',
           alignItems: 'center',
@@ -254,7 +237,10 @@ export default function Nav() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(5,5,5,0.97)',
+            background: 'linear-gradient(160deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.06) 100%)',
+            backdropFilter: 'blur(64px) saturate(180%) brightness(0.75)',
+            WebkitBackdropFilter: 'blur(64px) saturate(180%) brightness(0.75)',
+            borderTop: '0.5px solid rgba(255,255,255,0.12)',
             zIndex: 99,
             display: 'flex',
             flexDirection: 'column',
