@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk, Syne_Mono, Inter } from 'next/font/google'
 import './globals.css'
+import Cursor from '@/components/cursor'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -49,6 +50,7 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${syneMono.variable} ${inter.variable}`}
     >
       <body>
+        <Cursor />
         <a href="#main" className="skip-to-main">
           Skip to main content
         </a>

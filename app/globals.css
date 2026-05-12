@@ -69,6 +69,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Hide default cursor on pointer devices — custom cursor takes over */
+@media (pointer: fine) {
+  *, *::before, *::after { cursor: none !important; }
+}
+
 /* Skip to main — visible on focus only */
 .skip-to-main {
   position: absolute;
