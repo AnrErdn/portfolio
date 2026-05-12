@@ -18,27 +18,19 @@ export default function ProjectCard({ project, variant = 'standard' }: ProjectCa
 
   const cardStyle: React.CSSProperties = {
     position: 'relative',
-    borderRadius: '12px',
+    borderRadius: '4px',
     overflow: 'hidden',
-    background: isFeatured
-      ? 'rgba(163,255,71,0.04)'
-      : 'rgba(255,255,255,0.05)',
+    background: isFeatured ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.03)',
     border: isSide
-      ? '0.5px dashed rgba(255,255,255,0.12)'
-      : isFeatured
-      ? '0.5px solid rgba(163,255,71,0.20)'
-      : '0.5px solid rgba(255,255,255,0.12)',
+      ? '0.5px dashed rgba(255,255,255,0.09)'
+      : hovered
+      ? '0.5px solid rgba(255,255,255,0.14)'
+      : '0.5px solid rgba(255,255,255,0.07)',
     backdropFilter: 'blur(12px)',
     WebkitBackdropFilter: 'blur(12px)',
-    boxShadow: hovered
-      ? isFeatured
-        ? '0 0 24px rgba(163,255,71,0.35)'
-        : '0 0 12px rgba(163,255,71,0.12)'
-      : isFeatured
-      ? '0 0 20px rgba(163,255,71,0.12)'
-      : 'none',
     transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
-    transition: 'transform 200ms cubic-bezier(0.0,0.0,0.2,1.0), box-shadow 200ms cubic-bezier(0.0,0.0,0.2,1.0)',
+    transition:
+      'transform 280ms cubic-bezier(0.16,1,0.3,1), border-color 200ms ease, background 200ms ease',
     cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
@@ -53,8 +45,8 @@ export default function ProjectCard({ project, variant = 'standard' }: ProjectCa
       onMouseLeave={() => setHovered(false)}
     >
       <article style={cardStyle}>
-        {/* Featured bracket corners */}
-        {isFeatured && <BracketCorners size={20} color="rgba(163,255,71,0.55)" />}
+        {/* Bracket corners on featured — dimmer, no glow */}
+        {isFeatured && <BracketCorners size={18} color="rgba(163,255,71,0.35)" />}
 
         {/* Thumbnail */}
         <div
@@ -62,7 +54,7 @@ export default function ProjectCard({ project, variant = 'standard' }: ProjectCa
             position: 'relative',
             aspectRatio: '16/9',
             overflow: 'hidden',
-            background: '#141414',
+            background: '#0D0D0D',
             flexShrink: 0,
           }}
         >
@@ -72,35 +64,41 @@ export default function ProjectCard({ project, variant = 'standard' }: ProjectCa
             fill
             style={{
               objectFit: 'cover',
-              transform: hovered ? 'scale(1.05)' : 'scale(1)',
-              transition: 'transform 200ms cubic-bezier(0.0,0.0,0.2,1.0)',
+              transform: hovered ? 'scale(1.04)' : 'scale(1)',
+              transition: 'transform 500ms cubic-bezier(0.16,1,0.3,1)',
+              filter: hovered ? 'brightness(0.88)' : 'brightness(0.82)',
             }}
-            sizes={isFeatured ? '(max-width: 768px) 100vw, 63vw' : '(max-width: 768px) 100vw, 35vw'}
-            onError={() => {}} // thumbnails missing before launch — silent fail
+            sizes={
+              isFeatured
+                ? '(max-width: 768px) 100vw, 63vw'
+                : '(max-width: 768px) 100vw, 35vw'
+            }
+            onError={() => {}}
           />
 
-          {/* Hover CTA overlay */}
+          {/* Hover overlay — restrained, no glow */}
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(5,5,5,0.5)',
+              background: 'rgba(5,5,5,0.45)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               opacity: hovered ? 1 : 0,
-              transition: 'opacity 200ms ease',
+              transition: 'opacity 250ms ease',
             }}
           >
             <span
               style={{
                 fontFamily: 'var(--font-syne-mono, monospace)',
-                fontSize: '12px',
+                fontSize: '11px',
+                letterSpacing: '0.1em',
                 color: '#A3FF47',
-                border: '0.5px solid rgba(163,255,71,0.4)',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                letterSpacing: '0.08em',
+                border: '0.5px solid rgba(163,255,71,0.35)',
+                borderRadius: '4px',
+                padding: '8px 18px',
+                textTransform: 'uppercase',
               }}
             >
               {isSide ? 'View project →' : 'View case study →'}
@@ -109,18 +107,33 @@ export default function ProjectCard({ project, variant = 'standard' }: ProjectCa
         </div>
 
         {/* Card body */}
-        <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* Status badge + FEATURED tag row */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div
+          style={{
+            padding: '22px',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}
+        >
+          {/* Badge row */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+            }}
+          >
             {isFeatured && (
               <span
                 style={{
                   fontFamily: 'var(--font-syne-mono, monospace)',
                   fontSize: '10px',
                   letterSpacing: '0.1em',
-                  color: '#A3FF47',
-                  background: 'rgba(163,255,71,0.08)',
-                  border: '0.5px solid rgba(163,255,71,0.3)',
+                  color: 'rgba(163,255,71,0.75)',
+                  background: 'rgba(163,255,71,0.06)',
+                  border: '0.5px solid rgba(163,255,71,0.2)',
                   borderRadius: '4px',
                   padding: '2px 8px',
                   textTransform: 'uppercase',
@@ -136,7 +149,7 @@ export default function ProjectCard({ project, variant = 'standard' }: ProjectCa
                   fontSize: '10px',
                   letterSpacing: '0.1em',
                   color: '#9A9A9A',
-                  background: 'rgba(255,255,255,0.06)',
+                  background: 'rgba(255,255,255,0.05)',
                   borderRadius: '4px',
                   padding: '2px 8px',
                   textTransform: 'uppercase',
@@ -152,10 +165,11 @@ export default function ProjectCard({ project, variant = 'standard' }: ProjectCa
             style={{
               fontFamily: 'var(--font-display, sans-serif)',
               fontWeight: isFeatured ? 400 : 300,
-              fontSize: isFeatured ? '22px' : '18px',
+              fontSize: isFeatured ? '21px' : '17px',
               letterSpacing: '-0.02em',
-              color: '#F0F0F0',
+              color: hovered ? '#F0F0F0' : 'rgba(240,240,240,0.88)',
               lineHeight: 1.2,
+              transition: 'color 200ms ease',
             }}
           >
             {project.title}
@@ -165,8 +179,8 @@ export default function ProjectCard({ project, variant = 'standard' }: ProjectCa
           <p
             style={{
               fontFamily: 'var(--font-inter, sans-serif)',
-              fontSize: '14px',
-              lineHeight: 1.6,
+              fontSize: '13px',
+              lineHeight: 1.62,
               color: '#9A9A9A',
               flex: 1,
             }}
@@ -202,7 +216,7 @@ export default function ProjectCard({ project, variant = 'standard' }: ProjectCa
               style={{
                 fontFamily: 'var(--font-syne-mono, monospace)',
                 fontSize: '10px',
-                color: 'rgba(255,255,255,0.2)',
+                color: 'rgba(255,255,255,0.18)',
                 marginLeft: 'auto',
               }}
             >
