@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import BracketCorners from '@/components/hud/bracket-corners'
-import HeroBrush from '@/components/hero-brush'
 
 const ShaderGradientCanvas = dynamic(
   async () => {
@@ -152,9 +151,6 @@ export default function Hero({ ready = false }: HeroProps) {
       <div style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none' }}>
         <BracketCorners size={20} color="rgba(163,255,71,0.18)" />
       </div>
-
-      {/* ── Wet brush trail canvas ── */}
-      <HeroBrush />
 
       {/* ── Main content ── */}
       <div
