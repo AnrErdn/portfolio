@@ -26,7 +26,7 @@ export default function ScrambleText({
   const [output, setOutput] = useState(text)
   const elRef    = useRef<HTMLSpanElement>(null)
   const rafRef   = useRef<number>(0)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const hasRun   = useRef(false)
 
   const scramble = (ch: string) =>
