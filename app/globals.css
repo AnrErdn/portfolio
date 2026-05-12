@@ -1,26 +1,174 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* backgrounds */
+  --color-void:      #050505;
+  --color-abyss:     #0D0D0D;
+  --color-onyx:      #141414;
+  --color-graphite:  #1E1E1E;
+  --color-steel:     #2E2E2E;
+
+  /* text */
+  --color-chrome:    #C8C8C8;
+  --color-platinum:  #9A9A9A;
+  --color-white:     #F0F0F0;
+
+  /* accent */
+  --color-lime:      #A3FF47;
+  --color-lime-dim:  #7ACC2E;
+  --color-lime-glow: #C4FF82;
+
+  /* spacing */
+  --spacing-section: 120px;
+  --spacing-hero:    160px;
+
+  /* fonts */
+  --font-display: var(--font-space-grotesk, "Space Grotesk", sans-serif);
+  --font-mono:    var(--font-syne-mono, "Syne Mono", monospace);
+  --font-body:    var(--font-inter, "Inter", sans-serif);
+
+  /* radii */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   20px;
+  --radius-full: 9999px;
+
+  /* easing */
+  --ease-out:    cubic-bezier(0.0, 0.0, 0.2, 1.0);
+  --ease-in:     cubic-bezier(0.4, 0.0, 1.0, 1.0);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* durations */
+  --dur-micro:      100ms;
+  --dur-fast:       200ms;
+  --dur-standard:   300ms;
+  --dur-expressive: 500ms;
+  --dur-cinematic:  800ms;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  background-color: #050505;
+  color: #C8C8C8;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter, "Inter", sans-serif);
+  font-weight: 400;
+  background-color: #050505;
+  color: #C8C8C8;
+  min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Skip to main — visible on focus only */
+.skip-to-main {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-to-main:focus {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  height: auto;
+  padding: 8px 16px;
+  background: #A3FF47;
+  color: #050505;
+  z-index: 9999;
+  font-family: var(--font-syne-mono, monospace);
+  font-size: 12px;
+  border-radius: 4px;
+  outline: none;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 1px solid rgba(163, 255, 71, 0.6);
+  outline-offset: 3px;
+}
+
+/* Pulse animation for availability dot */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.85); }
+  }
+  .animate-pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+}
+
+/* Scan decorator lines at section transitions */
+.scan-decorator {
+  height: 1px;
+  background: rgba(163, 255, 71, 0.06);
+  width: 100%;
+}
+
+/* Glass materials */
+.glass-l1 {
+  background: rgba(255, 255, 255, 0.05);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-l2 {
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-accent {
+  background: rgba(163, 255, 71, 0.04);
+  border: 0.5px solid rgba(163, 255, 71, 0.20);
+  box-shadow: 0 0 20px rgba(163, 255, 71, 0.12);
+}
+
+/* Metal surface tokens */
+.surface-titanium {
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+  border: 0.5px solid #3a3a3a;
+}
+
+/* Chip base styles */
+.chip {
+  font-family: var(--font-syne-mono, monospace);
+  font-size: 11px;
+  border-radius: 4px;
+  padding: 4px 10px;
+  display: inline-block;
+}
+
+.chip-standard {
+  background: rgba(255, 255, 255, 0.04);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  color: #C8C8C8;
+}
+
+.chip-accent {
+  background: rgba(163, 255, 71, 0.07);
+  border: 0.5px solid rgba(163, 255, 71, 0.2);
+  color: rgba(163, 255, 71, 0.85);
+}
+
+.chip-learning {
+  border: 0.5px dashed rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.28);
+  background: transparent;
 }
