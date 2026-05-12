@@ -1,6 +1,5 @@
 import Nav from '@/components/nav'
 import AppShell from '@/components/app-shell'
-import StatCards from '@/components/stat-cards'
 import WorkGrid from '@/components/work-grid'
 import About from '@/components/about'
 import Skills from '@/components/skills'
@@ -16,7 +15,6 @@ export default function Home() {
       <main id="main">
         {/* AppShell handles Loader → Hero state handoff */}
         <AppShell />
-        <StatCards />
         <div className="scan-decorator" aria-hidden="true" />
         <WorkGrid />
         <div className="scan-decorator" aria-hidden="true" />
