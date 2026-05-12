@@ -72,24 +72,25 @@ export default function Hero({ ready = false }: HeroProps) {
         aria-hidden="true"
         style={{
           position: 'absolute',
-          inset: 0,
+          inset: '-20px',          /* bleed past edges so blur doesn't show white fringe */
           zIndex: 0,
           opacity: phase >= 1 ? 1 : 0,
           transition: 'opacity 2000ms ease',
+          filter: 'blur(10px)',    /* slight softening */
         }}
       >
         <ShaderGradientCanvas style={{ width: '100%', height: '100%' }} fov={45}>
           <ShaderGradient
             type="waterPlane"
             animate="on"
-            uSpeed={0.12}
-            uStrength={1.8}
-            uDensity={1.5}
+            uSpeed={0.2}
+            uStrength={3.5}
+            uDensity={1.3}
             uFrequency={5.5}
-            color1="#020202"
-            color2="#0A1500"
-            color3="#030303"
-            brightness={0.75}
+            color1="#050505"
+            color2="#1C4400"
+            color3="#0A0A0A"
+            brightness={1.6}
             grain="on"
             lightType="3d"
             envPreset="city"
@@ -101,15 +102,47 @@ export default function Hero({ ready = false }: HeroProps) {
         </ShaderGradientCanvas>
       </div>
 
-      {/* ── Vignette overlay to darken edges ── */}
+      {/* ── Cinematic grain overlay ── */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: '-10%',
+          width: '120%',
+          height: '120%',
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          opacity: 0.055,
+          pointerEvents: 'none',
+          zIndex: 1,
+          animation: 'grain-shift 0.4s steps(1) infinite',
+        }}
+      />
+
+      {/* ── Cinematic haze — soft light bloom from upper-left ── */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute',
           inset: 0,
           zIndex: 1,
+          background: [
+            'radial-gradient(ellipse 70% 50% at 10% 20%, rgba(163,255,71,0.04) 0%, transparent 70%)',
+            'radial-gradient(ellipse 50% 60% at 90% 80%, rgba(30,80,0,0.06) 0%, transparent 65%)',
+          ].join(', '),
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* ── Vignette overlay to darken edges ── */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 2,
           background:
-            'radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(5,5,5,0.7) 100%)',
+            'radial-gradient(ellipse 100% 100% at 50% 50%, transparent 35%, rgba(5,5,5,0.75) 100%)',
           pointerEvents: 'none',
         }}
       />
