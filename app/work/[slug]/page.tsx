@@ -374,7 +374,7 @@ export default async function CaseStudyPage({
           className="cs-next"
         >
           <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.08)', marginBottom: '56px' }} />
-          <Link href={nextProject.links.case_study} style={{ textDecoration: 'none', display: 'block', group: 'next' }}>
+          <Link href={nextProject.links.case_study} style={{ textDecoration: 'none', display: 'block' }}>
             <p
               style={{
                 fontFamily: 'var(--font-syne-mono, monospace)',
