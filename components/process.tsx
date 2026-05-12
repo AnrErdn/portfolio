@@ -71,6 +71,7 @@ export default function Process() {
           {STEPS.map((step, i) => (
             <FadeUp key={step.num} delay={80 * i}>
               <div
+                className="process-card"
                 style={{
                   background: 'rgba(255,255,255,0.02)',
                   border: '0.5px solid rgba(255,255,255,0.06)',
@@ -81,6 +82,7 @@ export default function Process() {
                   flexDirection: 'column',
                   gap: '12px',
                   position: 'relative',
+                  transition: 'border-color 220ms ease, background 220ms ease',
                 }}
               >
                 {/* Arrow connector — right side of each card except last */}
@@ -215,6 +217,10 @@ export default function Process() {
       </div>
 
       <style>{`
+        .process-card:hover {
+          border-color: rgba(163,255,71,0.45) !important;
+          background: rgba(163,255,71,0.025) !important;
+        }
         @media (max-width: 768px) {
           .process-grid {
             grid-template-columns: 1fr !important;
