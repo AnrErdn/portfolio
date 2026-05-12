@@ -1,8 +1,9 @@
 # Portfolio Handoff — Anar-Erdene Gantulga
 
 > Last updated: 2026-05-12
-> Session 2 by Claude Sonnet 4.6 — Design direction correction
-> Build status: ✅ Clean — TypeScript zero errors, zero console errors
+> Session 3 by Claude Sonnet 4.6 — react-three-fiber, ShaderGradient, liquid glass nav, brutalist redesign
+> Build status: ✅ Clean — compiles, dev server runs on port 3001, zero blocking errors
+> PR: https://github.com/AnrErdn/portfolio/pull/1
 
 ---
 
@@ -19,8 +20,12 @@ Next.js 16 App Router, Tailwind v4, MDX case studies, no database.
 ## 2. How to Run
 
 ```bash
-# Dev server — MUST use subshell syntax (Turbopack workspace bug, see §8)
-(cd C:/Users/ganar/dev/portfolio && node_modules/.bin/next dev --port 3001)
+# Dev server — run from the main portfolio dir (Turbopack workspace bug, see §10)
+(cd C:/Users/ganar/dev/portfolio && node_modules/next/dist/bin/next dev --port 3001)
+
+# If running from inside a worktree, .claude/launch.json already has the correct path:
+# node_modules/.bin/next is a bash shebang on Windows — must use the JS file directly:
+# node C:/Users/ganar/dev/portfolio/node_modules/next/dist/bin/next dev --port 3001
 
 # Type check
 npx --prefix C:/Users/ganar/dev/portfolio tsc --project C:/Users/ganar/dev/portfolio/tsconfig.json --noEmit
@@ -28,95 +33,73 @@ npx --prefix C:/Users/ganar/dev/portfolio tsc --project C:/Users/ganar/dev/portf
 
 ---
 
-## 3. Session 2 Changes (2026-05-12)
+## 3. Session 3 Changes (2026-05-12)
 
 ### What was done
-This session was a **design direction correction** — moving from generic/template toward cinematic, futuristic, sci-fi UI.
+Full visual redesign to match user's direction: **brutalist typography, interactive background, liquid glass nav**.
 
-#### New files
-| File | Purpose |
-|---|---|
-| `components/loader.tsx` | Canvas 2D particle globe — 720 Fibonacci sphere particles, 2 tilted orbit rings, atmospheric lime bloom, "INITIALIZING 000/100" counter. Runs ~3.6s then fades. |
-| `components/app-shell.tsx` | Client component that coordinates Loader → Hero state handoff. Keeps `page.tsx` a server component. |
-| `components/shader-section.tsx` | WebGL `#interface` section — domain-warped FBM fluid shader, mouse warps field, click creates ripple. IntersectionObserver pauses render loop when off-screen. |
+#### Libraries installed (in main portfolio `node_modules`)
+| Package | Version | Purpose |
+|---|---|---|
+| `three` | ^0.176.0 | WebGL math / scene primitives |
+| `@react-three/fiber` | ^9.6.1 | React renderer for Three.js — used in shader section |
+| `@react-three/drei` | ^10.x | R3F helpers — installed, available for future use |
+| `@types/three` | ^0.176.0 | TypeScript types for three.js |
+| `shadergradient` | ^1.3.5 | Animated GLSL gradient — used in hero background |
+
+> **`liquid-glass-js` (dashersw/liquid-glass-js) is NOT on npm.** The liquid glass effect for the nav is implemented manually with CSS `backdrop-filter` + SVG `feTurbulence/feDisplacementMap` + an animated specular highlight strip.
 
 #### Modified files
 | File | What changed |
 |---|---|
-| `components/hero.tsx` | **Complete rebuild.** Removed 2-column layout + reticle. New: full-viewport, left-aligned, name ("ANAR-ERDENE" / "GANTULGA") as huge display element (~108px). 10-phase stagger animation fires when `ready` prop becomes true. Atmospheric fog (3 radial gradient layers) + film grain overlay. Kept bracket corners. |
-| `components/project-card.tsx` | Removed ALL glow: no `box-shadow`, no lime shadows on featured/hover. `borderRadius` 12px → 4px. Border brightens on hover (no neon). Thumbnail `brightness(0.82)` → `brightness(0.88)` on hover. |
-| `app/globals.css` | Removed `box-shadow` from `.glass-accent`. Added `@keyframes grain-shift` (used by loader + hero film grain overlays). |
-| `app/page.tsx` | Replaced `<Hero />` + `<Nav />` with `<AppShell />` (which contains Loader + Hero). Added `<ShaderSection />` between Skills and Process. |
+| `next.config.ts` | Added `transpilePackages: ['three', '@react-three/fiber', '@react-three/drei', 'shadergradient']` |
+| `package.json` | Added new deps (three, @react-three/fiber, @react-three/drei, @types/three, shadergradient) |
+| `.claude/launch.json` | Fixed `runtimeArgs` path — must use `node_modules/next/dist/bin/next` not `.bin/next` (bash shebang breaks on Windows with `node` executor) |
+| `components/hero.tsx` | **Complete rebuild.** ShaderGradient animated background (dark void + lime waterplane), typography scaled to viewport-filling: ANAR-ERDENE at `clamp(56px, 13.5vw, 230px)` and GANTULGA at `clamp(80px, 20vw, 340px)`. Phase-stagger animation retained. Fog overlays removed (ShaderGradient replaces them). Vignette overlay kept. HUD metadata kept. |
+| `components/nav.tsx` | Liquid glass material: `backdrop-filter: blur(52px) saturate(200%) brightness(1.08)`, SVG filter (`#liquid-glass-filter`) with feTurbulence displacement on the glass surface, specular highlight `<div>` with `liquid-shimmer` CSS keyframe. SVG filter definition injected as a hidden fixed element. |
+| `components/work-grid.tsx` | **Complete redesign.** Card grid removed. Now a brutalist numbered list — each project is a full-width row with: huge ghosted index number (left), oversized title + roles (center), year + "VIEW →" (right). Hover: thumbnail fades in as background of the row (opacity 0.07), index turns lime, "VIEW →" turns lime. Made client component (`'use client'`) for hover state. |
+| `components/shader-section.tsx` | **Complete rebuild.** Replaced manual `<canvas>` WebGL with `@react-three/fiber` Canvas + custom GLSL domain-warp FBM shader. Mouse warps the noise field (via R3F `pointer`). Click creates a travelling ripple wave. IntersectionObserver still pauses canvas when off-screen. Dynamic import (`ssr: false`) for SSR safety. |
+| `app/work/[slug]/page.tsx` | **Brutalist redesign.** Title at `clamp(56px, 10vw, 160px)` fills the viewport. Back nav is minimal mono text. Meta strip uses raw horizontal rules instead of rounded boxes. All image `borderRadius` removed (0). Next-project link is `clamp(36px, 6vw, 96px)` with hover-to-lime. Padding increased to 56px on desktop. |
 
-#### What was NOT changed
-- Nav, About, Skills, Process, Contact, Footer — untouched
-- Case study pages — untouched
-- All project data in `lib/projects.ts` — untouched
-- MDX case study content — untouched
-
----
-
-## 4. What's Still Needed (User Requests Pending)
-
-The user interrupted the session with new requests. Here's what they want next:
-
-### HIGH PRIORITY — Requested but not yet implemented
-
-1. **Hero page — NOT satisfied yet.** User wants:
-   - "Typography based like big ass bold filling the screen" — even bigger than current
-   - **Interactive background** (not the current static fog gradients)
-   - Specifically mentioned wanting something like **react-three-fiber** for the hero background
-   - "Avoid that average safe design" — current version is still too tame
-
-2. **Liquid Glass Navbar** — user wants the Nav to use:
-   - GitHub: `https://github.com/dashersw/liquid-glass-js`
-   - The nav should look like Apple-style liquid glass, not the current pill nav
-
-3. **react-three-fiber integration** — user mentioned:
-   - GitHub: `https://github.com/pmndrs/react-three-fiber`
-   - Likely for the hero background / interactive 3D element
-
-4. **ShaderGradient** — user mentioned:
-   - GitHub: `https://github.com/ruucm/shadergradient`
-   - Interactive animated gradient shader, probably for hero or a section background
-
-5. **Project showcase page redesign** — user said it's "too generic":
-   - The individual case study page at `app/work/[slug]/page.tsx` needs a redesign
-   - "Avoid standard card layouts and typical Bootstrap-style spacing"
-   - "Use extreme typography scaling and brutalist white space"
-
-6. **Work section** (`components/work-grid.tsx`) — probably also needs redesign per the same brief
-
-### Design direction given by user (exact words)
-> "Avoid standard card layouts and typical Bootstrap-style spacing. Use extreme typography scaling and brutalist white space."
-> "The hero page should be typography based like big ass bold filling the screen with animation, and background is interactive"
-> "The navbar should use liquid-glass-js to make it glassy"
+#### What was NOT changed this session
+- `components/loader.tsx` — untouched
+- `components/app-shell.tsx` — untouched
+- `components/about.tsx`, `skills.tsx`, `process.tsx`, `contact.tsx`, `footer.tsx` — untouched
+- `components/project-card.tsx` — no longer used by work-grid but kept in codebase
+- `app/page.tsx` — untouched (still uses AppShell + WorkGrid + ShaderSection etc.)
+- `app/globals.css` — untouched
+- `lib/projects.ts`, MDX content — untouched
 
 ---
 
-## 5. Libraries to Install (Next Session)
+## 4. What's Still Needed
 
-```bash
-# react-three-fiber ecosystem (hero background / 3D)
-(cd C:/Users/ganar/dev/portfolio && npm install three @react-three/fiber @react-three/drei)
-(cd C:/Users/ganar/dev/portfolio && npm install -D @types/three)
+### HIGH PRIORITY — Requested and not yet done
 
-# ShaderGradient (animated gradient background)
-(cd C:/Users/ganar/dev/portfolio && npm install shadergradient)
+1. **Missing images** — pages will 404 on these:
+   - `/public/thumbnails/uudam-network.png` (or .jpg — currently showing placeholder error)
+   - `/public/hero-images/uudam-network.png`
+   - `/public/photo.jpg` (About section)
+   - `/public/resume.pdf` (Nav + About CTA)
+   - `/public/og-image.png` (Social preview 1200×630)
 
-# Liquid Glass (nav material)
-# Check the repo first — may need manual integration
-# https://github.com/dashersw/liquid-glass-js
-```
+2. **ShaderGradient SSR/hydration** — the hero background renders after a short flash of black because it's a dynamic import. If the flash is too noticeable after the loader, consider preloading the canvas or keeping the dark background intentionally during the loader phase (it already looks intentional).
+
+3. **About section photo** — still shows a broken image placeholder.
+
+### Lower priority / nice to have
+- `components/hud/scan-line.tsx` and `components/hud/reticle.tsx` are orphaned — can be deleted
+- `components/project-card.tsx` is no longer used by `work-grid.tsx` but is still imported nowhere — can be deleted or repurposed for future use
+- TypeScript: `THREE.Clock` deprecation warning in console (harmless, from shadergradient's internal drei usage) — can suppress with `console.warn` filter or ignore
 
 ---
 
-## 6. Every File — Full Map
+## 5. Every File — Full Map
 
 ### Config
 | File | Purpose |
 |---|---|
-| `next.config.ts` | MDX via `@next/mdx`, `turbopack.root` set to fix workspace detection bug |
+| `next.config.ts` | MDX via `@next/mdx`, `turbopack.root` fix, `transpilePackages` for three/r3f/shadergradient |
 | `mdx-components.tsx` | Required by Next.js App Router for MDX |
 | `app/globals.css` | Tailwind v4 `@theme` tokens + custom CSS + `grain-shift` keyframe |
 | `app/layout.tsx` | Space Grotesk + Syne Mono + Inter from `next/font/google`, SEO metadata |
@@ -125,26 +108,26 @@ The user interrupted the session with new requests. Here's what they want next:
 | File | Client? | Purpose |
 |---|---|---|
 | `components/app-shell.tsx` | ✅ | Loader → Hero state handoff |
-| `components/loader.tsx` | ✅ | Canvas particle globe loading screen |
-| `components/shader-section.tsx` | ✅ | WebGL `#interface` section, mouse-reactive |
-| `components/hero.tsx` | ✅ | Cinematic full-viewport hero with phase animation |
-| `components/nav.tsx` | ✅ | Glass pill nav — scroll hide/show + mobile hamburger |
-| `components/project-card.tsx` | ✅ | Card with hover lift, NO glow, 4px radius |
-| `components/work-grid.tsx` | — | 63%/35% featured+stack grid |
+| `components/loader.tsx` | ✅ | Canvas 2D particle globe loading screen (~3.6s) |
+| `components/hero.tsx` | ✅ | ShaderGradient background + viewport-filling typography + phase stagger |
+| `components/nav.tsx` | ✅ | Liquid glass pill nav — scroll hide/show, SVG distortion, shimmer |
+| `components/work-grid.tsx` | ✅ | Brutalist numbered list — hover reveals thumbnail + lime index |
+| `components/shader-section.tsx` | ✅ | R3F + custom GLSL FBM shader — mouse warp + click ripple |
+| `components/project-card.tsx` | ✅ | Old card component — no longer used, kept for reference |
 | `components/about.tsx` | ✅ | 2-col photo+bio, stats row |
 | `components/skills.tsx` | — | 3 category chip rows |
 | `components/process.tsx` | — | 4-step cards |
 | `components/contact.tsx` | ✅ | Pulse dot, email CTA |
 | `components/footer.tsx` | — | 3-col Syne Mono footer |
-| `components/fade-up.tsx` | ✅ | IntersectionObserver scroll reveal |
+| `components/fade-up.tsx` | ✅ | IntersectionObserver scroll reveal wrapper |
 | `components/hud/section-label.tsx` | — | `LABEL // DESC` mono text |
 | `components/hud/bracket-corners.tsx` | — | SVG bracket corners |
-| `components/hud/reticle.tsx` | — | Target reticle SVG (currently unused after hero rebuild) |
-| `components/hud/scan-line.tsx` | ✅ | 1px scan line sweep (currently unused after hero rebuild) |
+| `components/hud/reticle.tsx` | — | ⚠️ Orphaned — no longer used |
+| `components/hud/scan-line.tsx` | ✅ | ⚠️ Orphaned — no longer used |
 
 ---
 
-## 7. Images Status
+## 6. Images Status
 
 ### ✅ In place
 - `/public/thumbnails/ctf-mn.png`
@@ -161,7 +144,7 @@ The user interrupted the session with new requests. Here's what they want next:
 ### ❌ Missing (needed before launch)
 | File | Notes |
 |---|---|
-| `/public/thumbnails/uudam-network.png` | Still missing |
+| `/public/thumbnails/uudam-network.png` | Still missing — causes Image error in work list row |
 | `/public/hero-images/uudam-network.png` | Still missing |
 | `/public/photo.jpg` | About section photo |
 | `/public/resume.pdf` | Linked from nav + about |
@@ -169,7 +152,7 @@ The user interrupted the session with new requests. Here's what they want next:
 
 ---
 
-## 8. Design Tokens (unchanged)
+## 7. Design Tokens (unchanged)
 
 ```
 Colors:   --color-void #050505 · --color-lime #A3FF47 · --color-chrome #C8C8C8
@@ -180,20 +163,69 @@ Radii:    sm=4 md=8 lg=12 xl=20 full=9999
 
 ---
 
-## 9. Known Quirks
+## 8. ShaderGradient Config (hero background)
+
+The hero uses these ShaderGradient props — tweak here to adjust the animated gradient:
+
+```tsx
+<ShaderGradient
+  type="waterPlane"    // fluid motion
+  animate="on"
+  uSpeed={0.12}        // slow, cinematic
+  uStrength={1.8}      // wave amplitude
+  uDensity={1.5}
+  uFrequency={5.5}
+  color1="#020202"     // near-black
+  color2="#0A1500"     // very dark green (lime territory)
+  color3="#030303"     // void
+  brightness={0.75}    // keep it dark
+  grain="on"
+  lightType="3d"
+  envPreset="city"
+  cameraZoom={1.5}
+  positionX={0}
+  positionY={-1}
+  positionZ={0}
+/>
+```
+
+---
+
+## 9. R3F Shader Section Details
+
+The `#interface` section uses a custom GLSL domain-warp FBM shader written in `shader-section.tsx`. Key points:
+- Vertex shader: full-screen quad via `gl_Position = vec4(position.xy, 0.0, 1.0)`
+- Fragment shader: 2-pass domain warp (`q1 → q2 → f`) with mouse offset and ripple displacement
+- Palette: void black → dark lime → teal accent (three `mix()` bands)
+- Mouse: R3F `pointer` mapped to `[0,1]` UV space via `(pointer.x + 1) * 0.5`
+- Ripple: `uRipple` (click UV) + `uRippleAge` (seconds since click) — sinusoidal wave that decays
+- Off-screen pause: `IntersectionObserver` hides the canvas element when not visible
+- Dynamic import with `ssr: false` to avoid hydration mismatch
+
+---
+
+## 10. Known Quirks
 
 ### Turbopack workspace root bug
 Next.js Turbopack picks up the wrong root (Apple-Flow monorepo). Fixed in `next.config.ts`:
 ```ts
 turbopack: { root: 'C:/Users/ganar/dev/portfolio' }
 ```
-**Always run commands from inside portfolio dir using subshell `(cd ... && ...)`.**
 
-### Screenshot tool limitation
-The `grain-shift` CSS animation (infinite, on loader + hero grain overlays) prevents the Claude Preview screenshot tool from capturing the page when the WebGL shader section has rendered at least once in the session. Workaround: use the Chrome MCP or computer-use to screenshot instead.
+### `.bin/next` is a bash script on Windows
+When using `node` as the `runtimeExecutable` in `launch.json`, you cannot use `node_modules/.bin/next` — it's a bash shebang file and Node will throw a syntax error. Use the actual JS entry point:
+```
+node_modules/next/dist/bin/next
+```
+
+### Worktree node_modules resolution
+The worktree lives at `.claude/worktrees/gracious-kapitsa-6e3e84` which is INSIDE the main portfolio directory. Node module resolution walks up the tree and finds `C:/Users/ganar/dev/portfolio/node_modules` automatically — no need to `npm install` inside the worktree.
+
+### Screenshot tool + WebGL
+The Claude Preview screenshot tool captures a static frame. The ShaderGradient and R3F canvases are animated — the screenshot may show them mid-frame or blank depending on timing. This is cosmetic; the actual browser renders correctly.
+
+### THREE.Clock deprecation warning
+`shadergradient` internally uses drei which uses `THREE.Clock`. This logs a console warning but is harmless. It will go away when shadergradient updates its peer deps.
 
 ### `@mdx-js/loader` is a peer dep
 Not auto-installed with `@next/mdx`. Already in node_modules but if you `npm ci` from scratch, run `npm install @mdx-js/loader`.
-
-### `scan-line.tsx` and `reticle.tsx` are orphaned
-These HUD atoms are no longer used after the hero rebuild. They can be deleted or repurposed.
