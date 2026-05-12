@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import SectionLabel from '@/components/hud/section-label'
 import FadeUp from '@/components/fade-up'
+import ScrambleText from '@/components/scramble-text'
 
 export default function About() {
   return (
@@ -32,7 +33,7 @@ export default function About() {
               marginBottom: '48px',
             }}
           >
-            About me
+            <ScrambleText text="About me" duration={700} />
           </h2>
         </FadeUp>
 

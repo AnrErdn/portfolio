@@ -1,5 +1,6 @@
 import SectionLabel from '@/components/hud/section-label'
 import FadeUp from '@/components/fade-up'
+import ScrambleText from '@/components/scramble-text'
 
 const SKILLS = {
   Design: {
@@ -96,7 +97,7 @@ export default function Skills() {
               marginBottom: '48px',
             }}
           >
-            Skills & tools
+            <ScrambleText text="Skills & tools" duration={700} />
           </h2>
         </FadeUp>
 

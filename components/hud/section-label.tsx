@@ -1,9 +1,12 @@
+import ScrambleText from '@/components/scramble-text'
+
 interface SectionLabelProps {
   label: string
   description: string
 }
 
 export default function SectionLabel({ label, description }: SectionLabelProps) {
+  const text = description ? `${label} // ${description}` : label
   return (
     <p
       aria-hidden="true"
@@ -17,7 +20,7 @@ export default function SectionLabel({ label, description }: SectionLabelProps) 
         marginBottom: '12px',
       }}
     >
-      {label} // {description}
+      <ScrambleText text={text} duration={600} />
     </p>
   )
 }

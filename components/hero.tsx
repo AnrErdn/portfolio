@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import BracketCorners from '@/components/hud/bracket-corners'
+import ScrambleText from '@/components/scramble-text'
 
 const ShaderGradientCanvas = dynamic(
   async () => {
@@ -177,7 +178,7 @@ export default function Hero({ ready = false }: HeroProps) {
             ...phaseIn(phase, 2),
           }}
         >
-          PORTFOLIO // ANAR-ERDENE GANTULGA
+          <ScrambleText text="PORTFOLIO // ANAR-ERDENE GANTULGA" trigger={phase >= 2} duration={700} />
         </p>
 
         {/* ── The name — fills the viewport ── */}
@@ -244,9 +245,9 @@ export default function Hero({ ready = false }: HeroProps) {
                   ...phaseIn(phase, 6),
                 }}
               >
-                Where design thinking
+                <ScrambleText text="Where design thinking" trigger={phase >= 6} duration={800} />
                 <br />
-                meets production code.
+                <ScrambleText text="meets production code." trigger={phase >= 6} delay={120} duration={800} />
               </h1>
 
               <p
@@ -260,8 +261,7 @@ export default function Hero({ ready = false }: HeroProps) {
                   ...phaseIn(phase, 7),
                 }}
               >
-                UX/UI designer and frontend developer — building products that are
-                beautiful to use and solid to ship.
+                <ScrambleText text="UX/UI designer and frontend developer — building products that are beautiful to use and solid to ship." trigger={phase >= 7} duration={1000} />
               </p>
 
               {/* CTAs */}

@@ -1,5 +1,6 @@
 import SectionLabel from '@/components/hud/section-label'
 import FadeUp from '@/components/fade-up'
+import ScrambleText from '@/components/scramble-text'
 
 const STEPS = [
   {
@@ -54,7 +55,7 @@ export default function Process() {
               marginBottom: '48px',
             }}
           >
-            How I work
+            <ScrambleText text="How I work" duration={700} />
           </h2>
         </FadeUp>
 
