@@ -1,7 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import BracketCorners from '@/components/hud/bracket-corners'
+
+const ShaderGradientCanvas = dynamic(
+  async () => {
+    const { ShaderGradientCanvas } = await import('shadergradient')
+    return ShaderGradientCanvas
+  },
+  { ssr: false, loading: () => null }
+)
+const ShaderGradient = dynamic(
+  async () => {
+    const { ShaderGradient } = await import('shadergradient')
+    return ShaderGradient
+  },
+  { ssr: false }
+)
 
 interface HeroProps {
   ready?: boolean
@@ -11,25 +27,18 @@ function HudDate() {
   const [dateStr, setDateStr] = useState('')
   useEffect(() => {
     const d = new Date()
-    const yyyy = d.getFullYear()
-    const mm = String(d.getMonth() + 1).padStart(2, '0')
-    const dd = String(d.getDate()).padStart(2, '0')
-    setDateStr(`${yyyy}.${mm}.${dd}`)
+    setDateStr(
+      `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+    )
   }, [])
   return <>{dateStr}</>
 }
 
-// Returns transition styles for phase-gated reveal
-function phaseIn(
-  phase: number,
-  minPhase: number,
-  extra: React.CSSProperties = {}
-): React.CSSProperties {
+function phaseIn(phase: number, minPhase: number, extra: React.CSSProperties = {}): React.CSSProperties {
   return {
     opacity: phase >= minPhase ? 1 : 0,
-    transform: phase >= minPhase ? 'translateY(0px)' : 'translateY(30px)',
-    transition:
-      'opacity 750ms cubic-bezier(0.16,1,0.3,1), transform 750ms cubic-bezier(0.16,1,0.3,1)',
+    transform: phase >= minPhase ? 'translateY(0px)' : 'translateY(24px)',
+    transition: 'opacity 800ms cubic-bezier(0.16,1,0.3,1), transform 800ms cubic-bezier(0.16,1,0.3,1)',
     ...extra,
   }
 }
@@ -39,18 +48,16 @@ export default function Hero({ ready = false }: HeroProps) {
 
   useEffect(() => {
     if (!ready) return
-    // Staggered cinematic entrance — each element enters at a deliberate interval
     const timers = [
-      setTimeout(() => setPhase(1), 0),     // atmospheric overlays
-      setTimeout(() => setPhase(2), 180),   // eyebrow mono label
-      setTimeout(() => setPhase(3), 450),   // name line 1
-      setTimeout(() => setPhase(4), 650),   // name line 2
-      setTimeout(() => setPhase(5), 900),   // horizontal rule grows
-      setTimeout(() => setPhase(6), 1100),  // h1 headline
-      setTimeout(() => setPhase(7), 1350),  // body copy
-      setTimeout(() => setPhase(8), 1600),  // CTAs
-      setTimeout(() => setPhase(9), 1900),  // scroll hint
-      setTimeout(() => setPhase(10), 2100), // HUD metadata overlays
+      setTimeout(() => setPhase(1), 0),
+      setTimeout(() => setPhase(2), 200),
+      setTimeout(() => setPhase(3), 500),
+      setTimeout(() => setPhase(4), 750),
+      setTimeout(() => setPhase(5), 1000),
+      setTimeout(() => setPhase(6), 1250),
+      setTimeout(() => setPhase(7), 1550),
+      setTimeout(() => setPhase(8), 1900),
+      setTimeout(() => setPhase(9), 2200),
     ]
     return () => timers.forEach(clearTimeout)
   }, [ready])
@@ -58,124 +65,114 @@ export default function Hero({ ready = false }: HeroProps) {
   return (
     <section
       id="hero"
-      style={{
-        position: 'relative',
-        minHeight: '100svh',
-        background: '#050505',
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-      }}
+      style={{ position: 'relative', minHeight: '100svh', background: '#050505', overflow: 'hidden' }}
     >
-      {/* ── Atmospheric fog layers ── */}
+      {/* ── ShaderGradient background ── */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute',
           inset: 0,
-          background:
-            'radial-gradient(ellipse 90% 70% at 15% 55%, rgba(163,255,71,0.022) 0%, transparent 65%)',
-          opacity: phase >= 1 ? 1 : 0,
-          transition: 'opacity 1400ms ease',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'radial-gradient(ellipse 55% 45% at 85% 15%, rgba(20,20,20,0.9) 0%, transparent 65%)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'radial-gradient(ellipse 40% 30% at 90% 90%, rgba(163,255,71,0.012) 0%, transparent 55%)',
+          zIndex: 0,
           opacity: phase >= 1 ? 1 : 0,
           transition: 'opacity 2000ms ease',
-          pointerEvents: 'none',
         }}
-      />
+      >
+        <ShaderGradientCanvas style={{ width: '100%', height: '100%' }} fov={45}>
+          <ShaderGradient
+            type="waterPlane"
+            animate="on"
+            uSpeed={0.12}
+            uStrength={1.8}
+            uDensity={1.5}
+            uFrequency={5.5}
+            color1="#020202"
+            color2="#0A1500"
+            color3="#030303"
+            brightness={0.75}
+            grain="on"
+            lightType="3d"
+            envPreset="city"
+            cameraZoom={1.5}
+            positionX={0}
+            positionY={-1}
+            positionZ={0}
+          />
+        </ShaderGradientCanvas>
+      </div>
 
-      {/* ── Film grain ── */}
+      {/* ── Vignette overlay to darken edges ── */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute',
-          inset: '-10%',
-          width: '120%',
-          height: '120%',
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)'/%3E%3C/svg%3E\")",
-          opacity: 0.038,
+          inset: 0,
+          zIndex: 1,
+          background:
+            'radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(5,5,5,0.7) 100%)',
           pointerEvents: 'none',
-          animation: 'grain-shift 0.35s steps(1) infinite',
         }}
       />
 
       {/* ── HUD bracket corners ── */}
-      <BracketCorners size={18} color="rgba(163,255,71,0.2)" />
+      <div style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none' }}>
+        <BracketCorners size={20} color="rgba(163,255,71,0.18)" />
+      </div>
 
       {/* ── Main content ── */}
       <div
         className="hero-content"
         style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          width: '100%',
-          padding: '160px 48px 100px',
           position: 'relative',
-          zIndex: 1,
+          zIndex: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100svh',
+          padding: '160px 56px 80px',
+          maxWidth: '100%',
         }}
       >
-        {/* Eyebrow — mono HUD identifier */}
+        {/* Eyebrow */}
         <p
-          aria-label="Anar-Erdene — Designer and Developer"
           style={{
             fontFamily: 'var(--font-syne-mono, monospace)',
-            fontSize: '11px',
-            letterSpacing: '0.16em',
-            color: 'rgba(163,255,71,0.48)',
+            fontSize: '10px',
+            letterSpacing: '0.18em',
+            color: 'rgba(163,255,71,0.5)',
             textTransform: 'uppercase',
-            marginBottom: '28px',
+            marginBottom: '32px',
             ...phaseIn(phase, 2),
           }}
         >
-          ANAR-ERDENE // DESIGNER + DEVELOPER
+          PORTFOLIO // ANAR-ERDENE GANTULGA
         </p>
 
-        {/* ── Display name — the primary hero element ── */}
-        <div style={{ marginBottom: '36px' }}>
+        {/* ── The name — fills the viewport ── */}
+        <div style={{ flex: 1 }}>
           <div
-            className="hero-name"
+            className="hero-name-1"
             style={{
               fontFamily: 'var(--font-display, sans-serif)',
               fontWeight: 300,
-              fontSize: 'clamp(48px, 8.5vw, 108px)',
-              letterSpacing: '-0.04em',
-              lineHeight: 0.94,
-              color: '#F0F0F0',
+              fontSize: 'clamp(56px, 13.5vw, 230px)',
+              letterSpacing: '-0.045em',
+              lineHeight: 0.92,
+              color: '#EFEFEF',
               ...phaseIn(phase, 3),
             }}
           >
             ANAR-ERDENE
           </div>
           <div
-            className="hero-name"
+            className="hero-name-2"
             style={{
               fontFamily: 'var(--font-display, sans-serif)',
               fontWeight: 300,
-              fontSize: 'clamp(48px, 8.5vw, 108px)',
-              letterSpacing: '-0.04em',
-              lineHeight: 0.94,
-              color: '#F0F0F0',
-              marginTop: '6px',
+              fontSize: 'clamp(80px, 20vw, 340px)',
+              letterSpacing: '-0.045em',
+              lineHeight: 0.9,
+              color: '#FFFFFF',
+              marginTop: '4px',
               ...phaseIn(phase, 4),
             }}
           >
@@ -183,138 +180,140 @@ export default function Hero({ ready = false }: HeroProps) {
           </div>
         </div>
 
-        {/* Divider — draws from left */}
-        <div
-          aria-hidden="true"
-          style={{
-            height: '1px',
-            background: 'rgba(255,255,255,0.1)',
-            marginBottom: '36px',
-            maxWidth: '560px',
-            transformOrigin: 'left center',
-            transform: phase >= 5 ? 'scaleX(1)' : 'scaleX(0)',
-            transition: 'transform 900ms cubic-bezier(0.16,1,0.3,1)',
-          }}
-        />
-
-        {/* H1 — the semantic headline, visually secondary */}
-        <h1
-          style={{
-            fontFamily: 'var(--font-display, sans-serif)',
-            fontWeight: 300,
-            fontSize: 'clamp(20px, 2.8vw, 34px)',
-            letterSpacing: '-0.025em',
-            lineHeight: 1.22,
-            color: 'rgba(240,240,240,0.72)',
-            marginBottom: '22px',
-            maxWidth: '500px',
-            ...phaseIn(phase, 6),
-          }}
-        >
-          Where design thinking
-          <br />
-          meets production code.
-        </h1>
-
-        {/* Body copy */}
-        <p
-          style={{
-            fontFamily: 'var(--font-inter, sans-serif)',
-            fontWeight: 400,
-            fontSize: '15px',
-            lineHeight: 1.72,
-            color: 'rgba(200,200,200,0.52)',
-            marginBottom: '52px',
-            maxWidth: '420px',
-            ...phaseIn(phase, 7),
-          }}
-        >
-          UX/UI designer and frontend developer — building products that are
-          beautiful to use and solid to ship.
-        </p>
-
-        {/* CTAs */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '14px',
-            flexWrap: 'wrap',
-            ...phaseIn(phase, 8),
-          }}
-        >
-          <a
-            href="#work"
-            onClick={(e) => {
-              e.preventDefault()
-              document.getElementById('work')?.scrollIntoView({ behavior: 'smooth' })
-            }}
-            className="cta-primary"
+        {/* ── Below-name section ── */}
+        <div style={{ marginTop: '48px' }}>
+          {/* Horizontal rule — draws from left */}
+          <div
+            aria-hidden="true"
             style={{
-              fontFamily: 'var(--font-syne-mono, monospace)',
-              fontSize: '11px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              padding: '13px 28px',
-              background: '#A3FF47',
-              color: '#050505',
-              borderRadius: '4px',
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              border: '1px solid #A3FF47',
-              transition: 'filter 180ms ease',
+              height: '1px',
+              background: 'rgba(255,255,255,0.12)',
+              marginBottom: '32px',
+              maxWidth: '640px',
+              transformOrigin: 'left center',
+              transform: phase >= 5 ? 'scaleX(1)' : 'scaleX(0)',
+              transition: 'transform 1000ms cubic-bezier(0.16,1,0.3,1)',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.1)')}
-            onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1)')}
-          >
-            VIEW WORK ↓
-          </a>
-          <a
-            href="#about"
-            onClick={(e) => {
-              e.preventDefault()
-              document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
-            }}
-            style={{
-              fontFamily: 'var(--font-syne-mono, monospace)',
-              fontSize: '11px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              padding: '13px 28px',
-              background: 'transparent',
-              color: 'rgba(200,200,200,0.65)',
-              borderRadius: '4px',
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              border: '0.5px solid rgba(200,200,200,0.18)',
-              transition: 'border-color 180ms ease, color 180ms ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(200,200,200,0.45)'
-              e.currentTarget.style.color = 'rgba(200,200,200,0.95)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(200,200,200,0.18)'
-              e.currentTarget.style.color = 'rgba(200,200,200,0.65)'
-            }}
-          >
-            ABOUT ME
-          </a>
+          />
+
+          <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div>
+              <h1
+                className="hero-headline"
+                style={{
+                  fontFamily: 'var(--font-display, sans-serif)',
+                  fontWeight: 300,
+                  fontSize: 'clamp(18px, 2.2vw, 30px)',
+                  letterSpacing: '-0.025em',
+                  lineHeight: 1.25,
+                  color: 'rgba(240,240,240,0.65)',
+                  marginBottom: '14px',
+                  ...phaseIn(phase, 6),
+                }}
+              >
+                Where design thinking
+                <br />
+                meets production code.
+              </h1>
+
+              <p
+                style={{
+                  fontFamily: 'var(--font-inter, sans-serif)',
+                  fontSize: '14px',
+                  lineHeight: 1.7,
+                  color: 'rgba(200,200,200,0.45)',
+                  maxWidth: '380px',
+                  marginBottom: '36px',
+                  ...phaseIn(phase, 7),
+                }}
+              >
+                UX/UI designer and frontend developer — building products that are
+                beautiful to use and solid to ship.
+              </p>
+
+              {/* CTAs */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  flexWrap: 'wrap',
+                  ...phaseIn(phase, 8),
+                }}
+              >
+                <a
+                  href="#work"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    document.getElementById('work')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  style={{
+                    fontFamily: 'var(--font-syne-mono, monospace)',
+                    fontSize: '10px',
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    padding: '12px 26px',
+                    background: '#A3FF47',
+                    color: '#050505',
+                    borderRadius: '3px',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    border: '1px solid #A3FF47',
+                    transition: 'filter 180ms ease',
+                    fontWeight: 500,
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.1)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.filter = '')}
+                >
+                  VIEW WORK ↓
+                </a>
+                <a
+                  href="/resume.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontFamily: 'var(--font-syne-mono, monospace)',
+                    fontSize: '10px',
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    padding: '12px 26px',
+                    background: 'transparent',
+                    color: 'rgba(200,200,200,0.55)',
+                    borderRadius: '3px',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    border: '0.5px solid rgba(200,200,200,0.18)',
+                    transition: 'border-color 180ms ease, color 180ms ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(200,200,200,0.4)'
+                    e.currentTarget.style.color = 'rgba(200,200,200,0.9)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(200,200,200,0.18)'
+                    e.currentTarget.style.color = 'rgba(200,200,200,0.55)'
+                  }}
+                >
+                  RÉSUMÉ ↗
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Scroll hint */}
+        {/* Scroll hint — bottom */}
         <p
           aria-hidden="true"
           style={{
             fontFamily: 'var(--font-syne-mono, monospace)',
-            fontSize: '10px',
-            letterSpacing: '0.16em',
-            color: 'rgba(255,255,255,0.16)',
+            fontSize: '9px',
+            letterSpacing: '0.2em',
+            color: 'rgba(255,255,255,0.18)',
             textTransform: 'uppercase',
-            marginTop: '88px',
+            marginTop: '64px',
             ...phaseIn(phase, 9),
           }}
         >
@@ -328,29 +327,30 @@ export default function Hero({ ready = false }: HeroProps) {
         className="hero-hud-meta"
         style={{
           position: 'absolute',
-          top: '80px',
-          right: '48px',
+          top: '32px',
+          right: '56px',
           textAlign: 'right',
           fontFamily: 'var(--font-syne-mono, monospace)',
-          fontSize: '10px',
-          letterSpacing: '0.08em',
-          color: 'rgba(255,255,255,0.16)',
-          lineHeight: 1.9,
-          ...phaseIn(phase, 10),
+          fontSize: '9px',
+          letterSpacing: '0.1em',
+          color: 'rgba(255,255,255,0.14)',
+          lineHeight: 2,
+          zIndex: 4,
+          ...phaseIn(phase, 9),
         }}
       >
         <div>LAT 47.9077° N · LON 106.8832° E</div>
-        <div>
-          <HudDate />
-        </div>
-        <div>RENDER STATUS — ACTIVE</div>
+        <div><HudDate /></div>
+        <div>RENDER — ACTIVE</div>
       </div>
 
       <style>{`
         @media (max-width: 768px) {
-          .hero-content { padding: 120px 24px 80px !important; }
+          .hero-content { padding: 100px 24px 60px !important; }
           .hero-hud-meta { display: none !important; }
-          .hero-name { font-size: clamp(40px, 12vw, 72px) !important; }
+          .hero-name-1 { font-size: clamp(44px, 14vw, 100px) !important; }
+          .hero-name-2 { font-size: clamp(64px, 20vw, 140px) !important; }
+          .hero-headline { font-size: clamp(16px, 4vw, 24px) !important; }
         }
       `}</style>
     </section>
