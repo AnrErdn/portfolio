@@ -103,7 +103,6 @@ export default async function CaseStudyPage({
             alignItems: 'center',
             gap: '8px',
           }}
-          onMouseEnter={undefined}
         >
           ← WORK
         </Link>
@@ -217,8 +216,7 @@ export default async function CaseStudyPage({
                 whiteSpace: 'nowrap',
                 transition: 'background 150ms ease',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(163,255,71,0.07)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              className="cs-live-link"
             >
               LIVE SITE ↗
             </a>
@@ -400,8 +398,6 @@ export default async function CaseStudyPage({
                 transition: 'color 200ms ease',
               }}
               className="cs-next-title"
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#A3FF47')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#F0F0F0')}
             >
               {nextProject.title}
             </div>
@@ -436,6 +432,9 @@ export default async function CaseStudyPage({
           margin-bottom: 22px;
         }
         .mdx-content strong { color: #F0F0F0; font-weight: 500; }
+        .cs-live-link:hover { background: rgba(163,255,71,0.07) !important; }
+        .cs-next-title { transition: color 200ms ease; }
+        .cs-next-title:hover { color: #A3FF47 !important; }
         .mdx-content ul, .mdx-content ol {
           margin: 0 0 20px 24px;
           color: rgba(200,200,200,0.65);
