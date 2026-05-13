@@ -139,7 +139,6 @@ function WorkRow({ project, index }: WorkRowProps) {
         {/* Project info */}
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-            {/* GooeyText cycles: title → role1 → role2 → … */}
             <div
               style={{
                 fontFamily: 'var(--font-display, sans-serif)',
@@ -152,9 +151,9 @@ function WorkRow({ project, index }: WorkRowProps) {
               }}
             >
               <GooeyText
-                texts={[project.title, ...project.roles]}
-                morphTime={1}
-                cooldownTime={3}
+                texts={[project.title, project.title]}
+                morphTime={2.5}
+                cooldownTime={5}
               />
             </div>
             {project.status === 'concept' && (
