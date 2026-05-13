@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { projects } from '@/lib/projects'
 import FadeUp from '@/components/fade-up'
+import { GooeyText } from '@/components/ui/gooey-text-morphing'
 
 export default function WorkGrid() {
   return (
@@ -137,8 +138,9 @@ function WorkRow({ project, index }: WorkRowProps) {
 
         {/* Project info */}
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', flexWrap: 'wrap', marginBottom: '8px' }}>
-            <h3
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            {/* GooeyText cycles: title → role1 → role2 → … */}
+            <div
               style={{
                 fontFamily: 'var(--font-display, sans-serif)',
                 fontWeight: 300,
@@ -149,8 +151,12 @@ function WorkRow({ project, index }: WorkRowProps) {
                 transition: 'color 200ms ease',
               }}
             >
-              {project.title}
-            </h3>
+              <GooeyText
+                texts={[project.title, ...project.roles]}
+                morphTime={1}
+                cooldownTime={3}
+              />
+            </div>
             {project.status === 'concept' && (
               <span
                 style={{
@@ -162,34 +168,12 @@ function WorkRow({ project, index }: WorkRowProps) {
                   borderRadius: '3px',
                   padding: '2px 7px',
                   textTransform: 'uppercase',
-                  alignSelf: 'center',
+                  flexShrink: 0,
                 }}
               >
                 CONCEPT
               </span>
             )}
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              gap: '16px',
-              flexWrap: 'wrap',
-            }}
-          >
-            {project.roles.map((role) => (
-              <span
-                key={role}
-                style={{
-                  fontFamily: 'var(--font-syne-mono, monospace)',
-                  fontSize: '10px',
-                  letterSpacing: '0.08em',
-                  color: 'rgba(200,200,200,0.35)',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {role}
-              </span>
-            ))}
           </div>
         </div>
 
