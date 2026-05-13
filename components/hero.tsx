@@ -196,7 +196,7 @@ export default function Hero({ ready = false }: HeroProps) {
               ...phaseIn(phase, 3),
             }}
           >
-            <MatrixText text="ANAR-ERDENE" trigger={phase >= 3} letterInterval={90} letterAnimationDuration={450} />
+            <MatrixText text="ANAR-ERDENE" trigger={phase >= 3} letterInterval={90} letterAnimationDuration={450} repeatInterval={7000} />
           </div>
           <div
             className="hero-name-2"
@@ -211,7 +211,7 @@ export default function Hero({ ready = false }: HeroProps) {
               ...phaseIn(phase, 4),
             }}
           >
-            <MatrixText text="GANTULGA" trigger={phase >= 4} initialDelay={150} letterInterval={110} letterAnimationDuration={450} />
+            <MatrixText text="GANTULGA" trigger={phase >= 4} initialDelay={150} letterInterval={110} letterAnimationDuration={450} repeatInterval={7000} />
           </div>
         </div>
 

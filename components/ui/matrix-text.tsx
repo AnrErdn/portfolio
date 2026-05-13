@@ -19,6 +19,8 @@ interface MatrixTextProps {
   initialDelay?: number;
   letterAnimationDuration?: number;
   letterInterval?: number;
+  /** If set, the animation repeats every N milliseconds after it finishes. */
+  repeatInterval?: number;
 }
 
 export function MatrixText({
@@ -29,6 +31,7 @@ export function MatrixText({
   initialDelay = 0,
   letterAnimationDuration = 400,
   letterInterval = 80,
+  repeatInterval,
 }: MatrixTextProps) {
   const [letters, setLetters] = useState<LetterState[]>(() =>
     text.split("").map((char) => ({
@@ -47,7 +50,8 @@ export function MatrixText({
   );
 
   const runAnimation = useCallback(() => {
-    if (isAnimating.current || hasRun.current) return;
+    if (isAnimating.current) return;
+    if (!repeatInterval && hasRun.current) return;
     isAnimating.current = true;
     hasRun.current = true;
 
@@ -56,6 +60,9 @@ export function MatrixText({
     const step = () => {
       if (currentIndex >= text.length) {
         isAnimating.current = false;
+        if (repeatInterval) {
+          setTimeout(runAnimation, repeatInterval);
+        }
         return;
       }
 
@@ -81,7 +88,7 @@ export function MatrixText({
     };
 
     step();
-  }, [text, getRandomChar, letterAnimationDuration, letterInterval]);
+  }, [text, getRandomChar, letterAnimationDuration, letterInterval, repeatInterval]);
 
   // Controlled trigger (hero phase)
   useEffect(() => {
