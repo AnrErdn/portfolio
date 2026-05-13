@@ -1,9 +1,9 @@
 # Portfolio Handoff — Anar-Erdene Gantulga
 
-> Last updated: 2026-05-12
-> Session 3 by Claude Sonnet 4.6 — react-three-fiber, ShaderGradient, liquid glass nav, brutalist redesign
-> Build status: ✅ Clean — compiles, dev server runs on port 3001, zero blocking errors
-> PR: https://github.com/AnrErdn/portfolio/pull/1
+> Last updated: 2026-05-13
+> Session 4 by Claude Sonnet 4.6 — Vercel deploy, cursor, shader HUD, text animations, typewriter
+> Build status: ✅ Clean — `npm run build` passes, deployed to Vercel
+> Repo: https://github.com/AnrErdn/portfolio (branch: main)
 
 ---
 
@@ -33,7 +33,47 @@ npx --prefix C:/Users/ganar/dev/portfolio tsc --project C:/Users/ganar/dev/portf
 
 ---
 
-## 3. Session 3 Changes (2026-05-12)
+## 3. Session 4 Changes (2026-05-13)
+
+### What was done
+Vercel deployment, interactive cursor, shader HUD, text scramble/typewriter animations, process card hover, nav fix.
+
+#### New files created
+| File | Purpose |
+|---|---|
+| `components/cursor.tsx` | Sci-fi custom cursor: 6px lime dot + lagged 38px ring with bracket corners & tick marks. Hides default cursor via CSS `@media (pointer: fine)`. Mounted in `app/layout.tsx`. |
+| `components/hero-brush.tsx` | Canvas overlay (mix-blend-mode: screen) — draws lime-green brush strokes along cursor path, elongated along velocity, 3-layer gaussian, fades over ~1s. Listens on `#hero` section. |
+| `components/scramble-text.tsx` | Text scramble decode component. Chars shown as `]{$~|@012!3-_\/` etc., revealed left-to-right. Throttled at 85ms flicker rate. Triggered via IntersectionObserver (sections) or `trigger` boolean prop (hero). |
+| `components/ui/matrix-text.tsx` | MatrixText component (adapted from Kokonut UI). Per-char 0/1 flash in lime `#A3FF47`, then resolves to real char using `motion/react`. Accepts `trigger` prop for hero phase sync. |
+| `components/ui/typewriter.tsx` | Typewriter component (adapted from shadcn community). Types, deletes, cycles through array of strings. Uses `framer-motion`. Blinking cursor. |
+| `lib/utils.ts` | `cn()` helper (simple class joiner, no clsx dep needed). |
+
+#### Modified files
+| File | What changed |
+|---|---|
+| `next.config.ts` | Removed hardcoded `turbopack.root: 'C:/Users/ganar/dev/portfolio'` — caused build warnings on Vercel (Linux path mismatch). |
+| `app/layout.tsx` | Added `<Cursor />` import + render. |
+| `app/globals.css` | Added `@media (pointer: fine) { *, *::before, *::after { cursor: none !important } }` to hide default cursor on mouse devices. |
+| `app/page.tsx` | No changes currently (StatCards was added then removed per user request). |
+| `components/nav.tsx` | Removed scroll-hide behaviour (`hidden` state + `handleScroll` useEffect + `translateY` on transform). Nav now always stays visible. Mobile menu overlay changed from near-opaque black to liquid glass (`backdrop-filter: blur(64px) saturate(180%) brightness(0.75)` + semi-transparent gradient). |
+| `components/hero.tsx` | Added `ScrambleText` to eyebrow, headline, description. Added `MatrixText` for ANAR-ERDENE (phase 3) and GANTULGA (phase 4). Added `HeroBrush` canvas overlay. |
+| `components/hud/section-label.tsx` | Wraps label text in `<ScrambleText>` — all section labels now decode on scroll-into-view. |
+| `components/about.tsx` | `<ScrambleText>` on h2 "About me". |
+| `components/skills.tsx` | `<ScrambleText>` on h2 "Skills & tools". |
+| `components/process.tsx` | `<ScrambleText>` on h2 "How I work". Added `process-card` class + `.process-card:hover { border-color: rgba(163,255,71,0.45) }` CSS for green hover border. |
+| `components/contact.tsx` | Replaced static "Let's build something." h2 text with `<Typewriter>` cycling 3 phrases at 65ms/char with blinking `_` cursor. |
+| `components/shader-section.tsx` | Fixed aspect ratio stretch — added `uResolution` uniform read from `useThree().size`, shader now uses aspect-corrected UV space. Added full interactive HUD overlay: corner brackets, top-left label, top-right `SIG: ACTIVE` with pulse dot, bottom-left live X/Y coordinates, bottom-right specs, targeting reticle + crosshair that follows mouse. |
+| `app/work/[slug]/page.tsx` | Fixed TS error: removed invalid `group: 'next'` from inline style object. |
+
+#### Deployment
+- Deployed to Vercel. Two build errors fixed before clean deploy:
+  1. `group: 'next'` in inline style — not a valid CSS property, TypeScript rejects it
+  2. `turbopack.root` hardcoded to Windows path — Vercel's Linux server couldn't resolve it
+- Two Vercel projects detected: `anar-erdene` and `portfolio` — both deploy from the same repo/main branch
+
+---
+
+## 3b. Session 3 Changes (2026-05-12)
 
 ### What was done
 Full visual redesign to match user's direction: **brutalist typography, interactive background, liquid glass nav**.
@@ -124,6 +164,12 @@ Full visual redesign to match user's direction: **brutalist typography, interact
 | `components/hud/bracket-corners.tsx` | — | SVG bracket corners |
 | `components/hud/reticle.tsx` | — | ⚠️ Orphaned — no longer used |
 | `components/hud/scan-line.tsx` | ✅ | ⚠️ Orphaned — no longer used |
+| `components/cursor.tsx` | ✅ | Sci-fi global cursor — lime dot + lagged ring with brackets |
+| `components/hero-brush.tsx` | ✅ | Canvas brush trail on hero (mix-blend-mode: screen) |
+| `components/scramble-text.tsx` | ✅ | Text scramble decode — IntersectionObserver or `trigger` prop |
+| `components/ui/matrix-text.tsx` | ✅ | 0/1 matrix flash then resolve — uses `motion/react` |
+| `components/ui/typewriter.tsx` | ✅ | Typewriter with delete/cycle — uses `framer-motion` |
+| `lib/utils.ts` | — | `cn()` class name helper |
 
 ---
 
