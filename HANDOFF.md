@@ -1,9 +1,13 @@
 # Portfolio Handoff — Anar-Erdene Gantulga
 
-> Last updated: 2026-05-13
-> Session 4 by Claude Sonnet 4.6 — Vercel deploy, cursor, shader HUD, text animations, typewriter
+> Last updated: 2026-05-14
+> Session 5 by Claude Sonnet 4.6 — Hero matrix repeat, gooey text on work grid
 > Build status: ✅ Clean — `npm run build` passes, deployed to Vercel
 > Repo: https://github.com/AnrErdn/portfolio (branch: main)
+
+---
+
+> ⚠️ **Standing instruction:** Always update this HANDOFF.md at the end of every session or after any significant change. Include: what was done, what files changed, any new quirks discovered, and current build/deploy status.
 
 ---
 
@@ -33,7 +37,39 @@ npx --prefix C:/Users/ganar/dev/portfolio tsc --project C:/Users/ganar/dev/portf
 
 ---
 
-## 3. Session 4 Changes (2026-05-13)
+## 3. Session 5 Changes (2026-05-14)
+
+### What was done
+Hero name matrix animation now loops every 7 seconds. Gooey text morphing animation added to work grid project titles.
+
+#### New files created
+| File | Purpose |
+|---|---|
+| `components/ui/gooey-text-morphing.tsx` | GooeyText component — SVG `feColorMatrix` threshold filter creates a liquid gooey morph between two overlapping spans. Uses CSS Grid overlap (both spans `col-start-1 row-start-1`) instead of `absolute` positioning so it flows naturally in layout. Each instance gets a unique filter ID via `React.useId()`. Animation uses `setInterval` + `performance.now()` absolute timestamps for reliable timing across all browser contexts (background tabs, iframes, throttled timers). |
+
+#### Modified files
+| File | What changed |
+|---|---|
+| `components/ui/matrix-text.tsx` | Added `repeatInterval?: number` prop. When set, the `hasRun` one-shot guard is bypassed and the animation re-fires automatically every N milliseconds after it finishes. Used in hero for 7-second repeat cycle. |
+| `components/hero.tsx` | Both `MatrixText` instances (`ANAR-ERDENE`, `GANTULGA`) now pass `repeatInterval={7000}` — matrix flash replays every 7 seconds indefinitely. |
+| `components/work-grid.tsx` | Project title `h3` and roles row replaced with `GooeyText`. Each row passes `texts={[project.title, project.title]}` (same text morphs into itself for a gooey pulse effect), `morphTime={2.5}`, `cooldownTime={5}`. Roles row removed since GooeyText handles the title display. `GooeyText` imported from `@/components/ui/gooey-text-morphing`. |
+
+#### Bugs fixed during this session
+| Bug | Fix |
+|---|---|
+| SVG `feColorMatrix` filter not applied by Chrome when SVG is 0×0 | Added `overflow: hidden` to the SVG element — standard fix for hidden SVG defs |
+| `requestAnimationFrame` completely paused in iframe/background contexts | Switched to `setInterval` at 16ms |
+| `Date.now()` clock resolution frozen/throttled in cross-origin iframes, causing `dt` accumulation to stall | Replaced dt accumulation with `performance.now()` absolute `phaseStart` timestamps — `elapsed = (now - phaseStart) / 1000` is always correct regardless of timer throttling |
+| Hydration mismatch on SVG `values` attribute | Multiline JSX string → single-line string in the `feColorMatrix` values prop |
+| GooeyText spans blank for first 3+ seconds (initial cooldown delay) | Added immediate text initialization before the interval starts |
+
+#### PRs merged this session
+- PR #2 — Hero matrix repeat + gooey text animation (merged to main)
+- PR #4 — Gooey text animation fix (open, pending merge)
+
+---
+
+## 3b. Session 4 Changes (2026-05-13)
 
 ### What was done
 Vercel deployment, interactive cursor, shader HUD, text scramble/typewriter animations, process card hover, nav fix.
@@ -167,8 +203,9 @@ Full visual redesign to match user's direction: **brutalist typography, interact
 | `components/cursor.tsx` | ✅ | Sci-fi global cursor — lime dot + lagged ring with brackets |
 | `components/hero-brush.tsx` | ✅ | Canvas brush trail on hero (mix-blend-mode: screen) |
 | `components/scramble-text.tsx` | ✅ | Text scramble decode — IntersectionObserver or `trigger` prop |
-| `components/ui/matrix-text.tsx` | ✅ | 0/1 matrix flash then resolve — uses `motion/react` |
+| `components/ui/matrix-text.tsx` | ✅ | 0/1 matrix flash then resolve — uses `motion/react`. `repeatInterval` prop loops animation every N ms |
 | `components/ui/typewriter.tsx` | ✅ | Typewriter with delete/cycle — uses `framer-motion` |
+| `components/ui/gooey-text-morphing.tsx` | ✅ | GooeyText — SVG feColorMatrix gooey morph. CSS grid overlap spans, unique filter ID per instance, `performance.now()` timing |
 | `lib/utils.ts` | — | `cn()` class name helper |
 
 ---
@@ -275,3 +312,13 @@ The Claude Preview screenshot tool captures a static frame. The ShaderGradient a
 
 ### `@mdx-js/loader` is a peer dep
 Not auto-installed with `@next/mdx`. Already in node_modules but if you `npm ci` from scratch, run `npm install @mdx-js/loader`.
+
+### Timer + clock throttling in Claude Preview iframes
+The Claude Preview tool runs the page inside a cross-origin iframe. This causes:
+- `requestAnimationFrame` → completely paused (0fps). Never use rAF for animations that need to be verified in the preview tool.
+- `Date.now()` → clock resolution frozen/throttled. `dt` accumulation gives wrong results.
+- `setInterval` at 16ms → throttled but fires. Combined with `performance.now()` absolute timestamps (not delta accumulation), it works correctly.
+- The `preview_screenshot` tool times out when WebGL canvases (ShaderGradient, R3F) are present — use `preview_snapshot` for DOM verification instead.
+
+### GooeyText SVG filter must have `overflow: hidden`
+Chrome will not apply a `filter: url(#id)` reference if the `<svg>` element containing the `<filter>` defs has `width:0; height:0` without `overflow: hidden`. Always use `style={{ position:'absolute', width:0, height:0, overflow:'hidden' }}` on hidden SVG defs elements.
