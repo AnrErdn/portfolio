@@ -570,7 +570,7 @@ function TVScene() {
       <DustParticles />
 
       {/* TV — deep left, rotated to show right panel edge (3/4 view) */}
-      <group position={[-2.2, 0.12, 0]} rotation={[0, -0.38, 0]}>
+      <group position={[-2.2, 0.12, 0]} rotation={[0, 0.38, 0]}>
         <TVBody hovered={hovered} setHovered={setHovered} glowLightRef={glowLightRef} />
       </group>
 
