@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useMemo, Suspense } from 'react'
+import { useRef, useState, useMemo, useEffect, Suspense } from 'react'
 import React from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Environment, Float, Text } from '@react-three/drei'
@@ -164,6 +164,7 @@ interface CRTScreenProps {
   h: number
   hovered: boolean
   channel: number
+  onChannelChange: () => void
   glowLightRef: React.RefObject<THREE.PointLight>
 }
 
@@ -175,7 +176,7 @@ const CH_GLOW: [number, number, number][] = [
   [0.08, 0.80, 0.55],
 ]
 
-function CRTScreen({ w, h, hovered, channel, glowLightRef }: CRTScreenProps) {
+function CRTScreen({ w, h, hovered, channel, onChannelChange, glowLightRef }: CRTScreenProps) {
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       uTime:    { value: 0 },
@@ -207,7 +208,12 @@ function CRTScreen({ w, h, hovered, channel, glowLightRef }: CRTScreenProps) {
   })
 
   return (
-    <mesh position={[0, 0, 0.01]}>
+    <mesh
+      position={[0, 0, 0.01]}
+      onClick={(e) => { e.stopPropagation(); onChannelChange() }}
+      onPointerOver={(e) => { e.stopPropagation(); (e.nativeEvent.target as HTMLElement).style.cursor = 'pointer' }}
+      onPointerOut={(e) => { (e.nativeEvent.target as HTMLElement).style.cursor = 'auto' }}
+    >
       <planeGeometry args={[w, h]} />
       <primitive object={material} attach="material" />
     </mesh>
@@ -292,44 +298,30 @@ const REEL_LIME = new THREE.MeshStandardMaterial({
   emissiveIntensity: 0.28,
 })
 
-// ─── Channel knob ─────────────────────────────────────────────────────────────
+// ─── Channel knob — visual only, rotation driven by channel prop ──────────────
 
-interface ChannelKnobProps {
-  position: [number, number, number]
-  onChannelChange: () => void
-}
+function ChannelKnob({ position, channel }: { position: [number, number, number]; channel: number }) {
+  const groupRef = useRef<THREE.Group>(null!)
 
-function ChannelKnob({ position, onChannelChange }: ChannelKnobProps) {
-  const groupRef   = useRef<THREE.Group>(null!)
-  const lightRef   = useRef<THREE.PointLight>(null!)
-  const targetRot  = useRef(0)
-  const hovRef     = useRef(false)
+  useEffect(() => {
+    // target rotation snaps to new channel — useFrame will animate toward it
+  }, [channel])
 
   useFrame(() => {
     if (groupRef.current) {
-      groupRef.current.rotation.z += (targetRot.current - groupRef.current.rotation.z) * 0.14
-    }
-    if (lightRef.current) {
-      lightRef.current.intensity += ((hovRef.current ? 0.8 : 0) - lightRef.current.intensity) * 0.14
+      const target = -channel * (Math.PI / 2)
+      groupRef.current.rotation.z += (target - groupRef.current.rotation.z) * 0.14
     }
   })
 
   return (
-    <group
-      ref={groupRef}
-      position={position}
-      onClick={(e) => { e.stopPropagation(); targetRot.current -= Math.PI / 2; onChannelChange() }}
-      onPointerOver={(e) => { e.stopPropagation(); hovRef.current = true; document.body.style.cursor = 'pointer' }}
-      onPointerOut={() => { hovRef.current = false; document.body.style.cursor = 'auto' }}
-    >
+    <group ref={groupRef} position={position}>
       <mesh material={KNOB_MAT} castShadow>
         <cylinderGeometry args={[0.07, 0.08, 0.12, 20]} />
       </mesh>
-      {/* Indicator line — always lime so it reads as the active knob */}
       <mesh position={[0, 0.065, 0.015]} material={LIME_ACCENT}>
         <boxGeometry args={[0.012, 0.04, 0.01]} />
       </mesh>
-      <pointLight ref={lightRef} position={[0, 0, 0.18]} intensity={0} color="#A3FF47" distance={1.4} decay={2} />
     </group>
   )
 }
@@ -371,7 +363,7 @@ function TVBody({ hovered, setHovered, glowLightRef, channel, onChannelChange }:
 
       {/* CRT screen — offset further forward to avoid z-fighting with bezel face at D*0.5+0.05 */}
       <group position={[0, 0.05, D * 0.5 + 0.09]}>
-        <CRTScreen w={SW} h={SH} hovered={hovered} channel={channel} glowLightRef={glowLightRef} />
+        <CRTScreen w={SW} h={SH} hovered={hovered} channel={channel} onChannelChange={onChannelChange} glowLightRef={glowLightRef} />
       </group>
 
       {/* Screen glow point light */}
@@ -409,7 +401,7 @@ function TVBody({ hovered, setHovered, glowLightRef, channel, onChannelChange }:
       ))}
       <ChannelKnob
         position={[W * 0.5 - 0.22, -0.3 + 0.18, D * 0.5 + 0.07]}
-        onChannelChange={onChannelChange}
+        channel={channel}
       />
 
       {/* Lime indicator LED */}
