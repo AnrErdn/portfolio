@@ -569,14 +569,14 @@ function TVScene() {
       <FloatingFilmReel />
       <DustParticles />
 
-      {/* TV — shifted left, rotated to show left panel edge (3/4 view) */}
-      <group position={[-1.6, 0.12, 0]} rotation={[0, 0.38, 0]}>
+      {/* TV — deep left, rotated to show right panel edge (3/4 view) */}
+      <group position={[-2.2, 0.12, 0]} rotation={[0, -0.38, 0]}>
         <TVBody hovered={hovered} setHovered={setHovered} glowLightRef={glowLightRef} />
       </group>
 
       <Suspense fallback={null}>
         <Text
-          position={[-1.6, -1.75, 0.78]}
+          position={[-2.2, -1.75, 0.78]}
           fontSize={0.085}
           color="rgba(163,255,71,0.55)"
           font={undefined}
@@ -596,7 +596,7 @@ function TVScene() {
 export default function AboutTV() {
   return (
     <Canvas
-      camera={{ position: [3.0, 0.3, 7.5], fov: 62 }}
+      camera={{ position: [1.0, 0.3, 7.5], fov: 62 }}
       shadows
       style={{ width: '100%', height: '100%' }}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
