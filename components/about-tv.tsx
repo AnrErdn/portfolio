@@ -368,31 +368,81 @@ function TVBody({ hovered, setHovered, glowLightRef }: TVBodyProps) {
 // ─── Floating objects ─────────────────────────────────────────────────────────
 
 function FloatingVHS() {
+  const W = 1.55, H = 0.96, D = 0.26
+
   return (
     <Float speed={1.2} rotationIntensity={0.4} floatIntensity={0.7}>
       <group position={[-4.8, -1.0, 1.2]} rotation={[0.15, 0.45, -0.08]}>
-        <mesh material={VHS_BODY} castShadow>
-          <boxGeometry args={[1.55, 0.96, 0.24]} />
+        {/* Main body — chrome titanium */}
+        <mesh material={CASSETTE_BODY} castShadow>
+          <boxGeometry args={[W, H, D]} />
         </mesh>
-        {/* Lime label */}
-        <mesh position={[0, 0.12, 0.13]} material={VHS_LABEL}>
-          <boxGeometry args={[1.15, 0.52, 0.01]} />
+
+        {/* Top + bottom chrome strips */}
+        <mesh position={[0,  H * 0.5 + 0.02, 0]} material={CHROME_MAT}>
+          <boxGeometry args={[W + 0.02, 0.04, D + 0.02]} />
         </mesh>
-        {/* Reels */}
-        <mesh position={[-0.35, -0.15, 0.13]} rotation={[Math.PI / 2, 0, 0]} material={REEL_MAT}>
-          <cylinderGeometry args={[0.17, 0.17, 0.01, 18]} />
+        <mesh position={[0, -H * 0.5 - 0.02, 0]} material={CHROME_MAT}>
+          <boxGeometry args={[W + 0.02, 0.04, D + 0.02]} />
         </mesh>
-        <mesh position={[0.35, -0.15, 0.13]} rotation={[Math.PI / 2, 0, 0]} material={REEL_MAT}>
-          <cylinderGeometry args={[0.17, 0.17, 0.01, 18]} />
+
+        {/* Front stepped panel */}
+        <mesh position={[0, 0.06, D * 0.5 + 0.01]} material={REEL_MAT}>
+          <boxGeometry args={[W - 0.12, H - 0.12, 0.02]} />
         </mesh>
-        {/* Tape window */}
-        <mesh position={[0, -0.15, 0.13]} material={TV_BEZEL}>
-          <boxGeometry args={[0.82, 0.28, 0.01]} />
+
+        {/* Tape window recess */}
+        <mesh position={[0, -0.14, D * 0.5 - 0.01]} material={TV_BEZEL}>
+          <boxGeometry args={[0.86, 0.28, 0.04]} />
         </mesh>
+        <mesh position={[0, -0.14, D * 0.5 + 0.015]} material={TV_BEZEL}>
+          <boxGeometry args={[0.80, 0.22, 0.01]} />
+        </mesh>
+
+        {/* Left reel — chrome rim + dark disc + hub */}
+        <mesh position={[-0.27, -0.14, D * 0.5 + 0.02]} rotation={[Math.PI / 2, 0, 0]} material={CHROME_MAT}>
+          <torusGeometry args={[0.11, 0.015, 6, 18]} />
+        </mesh>
+        <mesh position={[-0.27, -0.14, D * 0.5 + 0.015]} rotation={[Math.PI / 2, 0, 0]} material={REEL_MAT}>
+          <cylinderGeometry args={[0.09, 0.09, 0.01, 12]} />
+        </mesh>
+        <mesh position={[-0.27, -0.14, D * 0.5 + 0.025]} rotation={[Math.PI / 2, 0, 0]} material={CHROME_MAT}>
+          <cylinderGeometry args={[0.03, 0.03, 0.012, 8]} />
+        </mesh>
+
+        {/* Right reel */}
+        <mesh position={[0.27, -0.14, D * 0.5 + 0.02]} rotation={[Math.PI / 2, 0, 0]} material={CHROME_MAT}>
+          <torusGeometry args={[0.11, 0.015, 6, 18]} />
+        </mesh>
+        <mesh position={[0.27, -0.14, D * 0.5 + 0.015]} rotation={[Math.PI / 2, 0, 0]} material={REEL_MAT}>
+          <cylinderGeometry args={[0.09, 0.09, 0.01, 12]} />
+        </mesh>
+        <mesh position={[0.27, -0.14, D * 0.5 + 0.025]} rotation={[Math.PI / 2, 0, 0]} material={CHROME_MAT}>
+          <cylinderGeometry args={[0.03, 0.03, 0.012, 8]} />
+        </mesh>
+
+        {/* Label — dark panel */}
+        <mesh position={[0, 0.22, D * 0.5 + 0.02]} material={VHS_BODY}>
+          <boxGeometry args={[W - 0.16, 0.32, 0.005]} />
+        </mesh>
+        {/* Three lime accent lines */}
+        {[0.29, 0.22, 0.15].map((y, i) => (
+          <mesh key={i} position={[0, y, D * 0.5 + 0.026]} material={LIME_ACCENT}>
+            <boxGeometry args={[W - 0.24, 0.007, 0.005]} />
+          </mesh>
+        ))}
+
         {/* Lime spine */}
-        <mesh position={[-0.775, 0, 0]} material={LIME_ACCENT}>
-          <boxGeometry args={[0.008, 0.96, 0.24]} />
+        <mesh position={[-W * 0.5 + 0.005, 0, 0]} material={LIME_ACCENT}>
+          <boxGeometry args={[0.008, H, D]} />
         </mesh>
+
+        {/* Chrome corner edges */}
+        {([ [-1, -1], [1, -1], [-1, 1], [1, 1] ] as [number, number][]).map(([sx, sy], i) => (
+          <mesh key={i} position={[sx * W * 0.5, sy * H * 0.5, 0]} material={CHROME_MAT}>
+            <boxGeometry args={[0.008, 0.008, D]} />
+          </mesh>
+        ))}
       </group>
     </Float>
   )
