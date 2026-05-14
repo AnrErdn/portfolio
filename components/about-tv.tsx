@@ -406,7 +406,7 @@ function FloatingVHS() {
 function FloatingCassette() {
   return (
     <Float speed={0.9} rotationIntensity={0.5} floatIntensity={0.8}>
-      <group position={[3.2, 1.6, 0.3]} rotation={[-0.2, -0.5, 0.15]}>
+      <group position={[1.8, 1.6, 0.3]} rotation={[-0.2, -0.5, 0.15]}>
         <mesh material={CASSETTE_BODY} castShadow>
           <boxGeometry args={[1.1, 0.7, 0.14]} />
         </mesh>
@@ -439,7 +439,7 @@ function FloatingCassette() {
 function FloatingFilmReel() {
   return (
     <Float speed={1.5} rotationIntensity={0.6} floatIntensity={0.5}>
-      <group position={[3.6, -1.6, 0.5]} rotation={[0.8, 0.3, 0.2]}>
+      <group position={[2.0, -1.6, 0.5]} rotation={[0.8, 0.3, 0.2]}>
         {/* Main disc */}
         <mesh material={REEL_DISC} castShadow>
           <cylinderGeometry args={[0.62, 0.62, 0.06, 32]} />
@@ -569,13 +569,13 @@ function TVScene() {
       <DustParticles />
 
       {/* TV — shifted left so dossier sits in the right half */}
-      <group position={[-0.8, 0.12, 0]}>
+      <group position={[-1.6, 0.12, 0]}>
         <TVBody hovered={hovered} setHovered={setHovered} glowLightRef={glowLightRef} />
       </group>
 
       <Suspense fallback={null}>
         <Text
-          position={[-0.8, -1.75, 0.78]}
+          position={[-1.6, -1.75, 0.78]}
           fontSize={0.085}
           color="rgba(163,255,71,0.55)"
           font={undefined}
@@ -595,7 +595,7 @@ function TVScene() {
 export default function AboutTV() {
   return (
     <Canvas
-      camera={{ position: [1.2, 0.3, 7.5], fov: 62 }}
+      camera={{ position: [2.2, 0.3, 7.5], fov: 62 }}
       shadows
       style={{ width: '100%', height: '100%' }}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
