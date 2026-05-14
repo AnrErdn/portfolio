@@ -30,17 +30,11 @@ const frag = /* glsl */`
     return uv + c * dot(c, c) * str;
   }
 
-  // Idle: phosphor noise signal with subtle VHS lag and occasional glitch
+  // Idle: phosphor noise signal with occasional glitch
   vec3 noiseSignal(vec2 uv, float t) {
-    // Fewer, wider lag bands — less scratchy
-    float lagRow   = floor(uv.y * 6.0);
-    float isLag    = step(0.91, rand(vec2(lagRow * 0.07, floor(t * 1.5) * 0.09)));
-    float lagShift = (rand(vec2(lagRow * 0.13, floor(t * 1.5) * 0.07)) - 0.5) * 0.055;
-    vec2  luv      = vec2(uv.x + isLag * lagShift, uv.y);
-
-    float n1    = rand(luv + fract(t * 19.7));
-    float n2    = rand(luv * 1.4 + fract(t * 8.3));
-    float n3    = rand(luv * 2.3 - fract(t * 13.5));
+    float n1    = rand(uv + fract(t * 19.7));
+    float n2    = rand(uv * 1.4 + fract(t * 8.3));
+    float n3    = rand(uv * 2.3 - fract(t * 13.5));
     float noise = n1 * 0.52 + n2 * 0.32 + n3 * 0.16;
 
     // Phosphor green tint
@@ -407,7 +401,7 @@ function FloatingVHS() {
 function FloatingCassette() {
   return (
     <Float speed={0.9} rotationIntensity={0.5} floatIntensity={0.8}>
-      <group position={[1.8, 1.6, 0.3]} rotation={[-0.2, -0.5, 0.15]}>
+      <group position={[0.8, 1.6, 0.3]} rotation={[-0.2, -0.5, 0.15]}>
         <mesh material={CASSETTE_BODY} castShadow>
           <boxGeometry args={[1.1, 0.7, 0.14]} />
         </mesh>
@@ -440,7 +434,7 @@ function FloatingCassette() {
 function FloatingFilmReel() {
   return (
     <Float speed={1.5} rotationIntensity={0.6} floatIntensity={0.5}>
-      <group position={[2.0, -1.6, 0.5]} rotation={[0.8, 0.3, 0.2]}>
+      <group position={[1.0, -1.6, 0.5]} rotation={[0.8, 0.3, 0.2]}>
         {/* Main disc */}
         <mesh material={REEL_DISC} castShadow>
           <cylinderGeometry args={[0.62, 0.62, 0.06, 32]} />

@@ -1,7 +1,7 @@
 # Portfolio Handoff — Anar-Erdene Gantulga
 
 > Last updated: 2026-05-15
-> Session 6 by Claude Sonnet 4.6 — About section overhaul: metallic 3D TV, CRT noise→aurora shader, full-bleed canvas
+> Session 7 by Claude Sonnet 4.6 — About section: positioning, rotation fix, scratch removal, floating object reposition
 > Build status: ✅ Clean — TypeScript passes, deployed to Vercel
 > Repo: https://github.com/AnrErdn/portfolio (branch: main)
 
@@ -37,7 +37,33 @@ npx --prefix C:/Users/ganar/dev/portfolio tsc --project C:/Users/ganar/dev/portf
 
 ---
 
-## 3. Session 6 Changes (2026-05-15)
+## 3. Session 7 Changes (2026-05-15)
+
+### What was done
+Iterative positioning, rotation, and visual polish pass on the About section after the Session 6 overhaul.
+
+#### Modified files
+| File | What changed |
+|---|---|
+| `components/about-tv.tsx` | **Scene repositioning:** Added scene root group at `[-0.8, 0, 0]` to shift all objects left without touching their individual angles. TV group moved to `[-2.2, 0.12, 0]` (was `-0.8`). **TV rotation:** Final rotation `[0, 0.38, 0]` — tried +0.38 → -0.38 → +0.38, settled on +0.38 (3/4 view showing left panel edge). **Camera:** Reset to `[1.0, 0.3, 7.5]` after frustum clipping issue (camera at x=3.0 put TV at ~31.5° from center, past the 31° fov half-angle — TV was barely visible). **Bottom label text:** Moved `<Text>` inside the TV group as a child (local coords `[0, -1.87, 0.82]`) so it inherits the Y rotation and matches the TV angle. Previously it was a sibling with no rotation. **Screen size:** Increased to `SW=2.55, SH=1.95` (was smaller). **CRT scratches:** Removed VHS lag bands (`lagRow/isLag/lagShift` lines) from `noiseSignal()` — they were causing gray horizontal scratch artifacts. Noise now reads `uv` directly without lag-shifted offset. **Floating object positions:** Cassette `[0.8, 1.6, 0.3]` (was `[1.8]`), film reel `[1.0, -1.6, 0.5]` (was `[2.0]`), VHS stays at `[-3.8, -1.0, 0.4]`. |
+| `components/about.tsx` | Layout kept as full-bleed (Session 6). Worktree version uses absolute-positioned canvas; main-branch version uses contained tv-wrapper — both are valid, worktree has the cinematic overlays (scanlines, grain, vignette, right-side gradient). |
+
+#### Bugs fixed
+| Bug | Fix |
+|---|---|
+| TV invisible with camera at `[3.0, 0.3, 7.5]` | Camera angle to TV at x=-1.6 was ~31.5°, exceeding fov half-angle of 31°. Reset camera to `[1.0, 0.3, 7.5]`, moved TV to x=-2.2. |
+| Bottom label at wrong angle | `<Text>` was a sibling of the TV group, not a child — no rotation inherited. Moved inside the group with local-space position. |
+| Gray horizontal scratch bands on CRT screen | Caused by VHS lag rows (`lagRow * 6.0` bands, `isLag` trigger, `lagShift` horizontal offset). Removed all three lag variables; noise now uses `uv` directly. |
+
+#### Quirks discovered
+| Quirk | Details |
+|---|---|
+| Worktree preview server must specify dir | The preview tool's existing server (port 3001) runs from the main portfolio dir, not the worktree. Always start a separate server for the worktree using `autoPort: true` and pass the worktree path as the dir argument to `next dev`. |
+| Camera frustum math | With `fov:62` and distance 7.5, the half-width at origin is `7.5 * tan(31°) ≈ 4.5 units`. Objects past ±4.5 on X get clipped. TV at world x=-3.0 (scene -0.8 + TV local -2.2) appears at ~17% from left edge. |
+
+---
+
+## 3a. Session 6 Changes (2026-05-15)
 
 ### What was done
 Full overhaul of the About section: metallic 3D TV with chrome/titanium materials and lime accents, new CRT shader with visible noise-signal idle state and aurora hover state, floating objects repositioned and redesigned with metallic materials + lime details, canvas moved to full-bleed layout so objects can float freely across both columns, cinematic overlays added (CSS scanlines, film grain, radial vignette, right-side gradient for dossier readability).
@@ -45,13 +71,8 @@ Full overhaul of the About section: metallic 3D TV with chrome/titanium material
 #### Modified files
 | File | What changed |
 |---|---|
-| `components/about-tv.tsx` | Complete material overhaul: TV body → titanium gray (`#3C3E44`, metalness 0.82), bezel → `#292B30` metalness 0.88, knobs/chrome → near-mirror metalness 0.96–0.98. Lime accent materials (emissive `#A3FF47`) on indicator LED, bottom strip, VHS spine, cassette screws/stripe, film reel spokes. CRT shader rewritten: idle state = visible phosphor-green noise with VHS lag bands + horizontal glitch + rolling interference band (no longer near-black at idle); hover state = flowing aurora in lime→teal→cyan (5 bands with sinusoidal wave motion, `exp(-dist * 21)` glow, shimmer). Screen glow point light tracks hover: green on idle, teal/cyan on hover. Lighting overhauled: ambient 0.40 + key 3.5 + warm fill 1.6 + lime bounce from below 0.9 + white rim 0.7. Environment changed from "night" to "warehouse" for metallic surface reflections. Floating objects repositioned: VHS `[-3.8, -1.0, 0.4]`, cassette `[3.2, 1.6, 0.3]`, film reel `[3.6, -1.6, 0.5]`. TV group shifted to `[-0.8, 0.12, 0]`. Camera: `fov: 62`, position `[0, 0.3, 7.5]`. Removed `useEffect`/texture loading (no longer needed — shader is fully procedural). |
-| `components/about.tsx` | Layout restructured: canvas moved from left grid column to `position:absolute; inset:0` full-bleed behind entire section. Left column replaced with transparent spacer (TV shows through). Removed `overflow:hidden` from tv-wrapper. Added overlays: right-side gradient (`transparent 30% → #0D0D0D 80%`) for dossier readability; CSS scanlines via `repeating-linear-gradient`; film grain; radial vignette centred at `28% 50%`. `zIndex` stacking: canvas 0, gradients 1–2, content 3. |
-
-#### Quirks discovered
-| Quirk | Details |
-|---|---|
-| Worktree preview server must specify dir | The preview tool's existing server (port 3001) runs from the main portfolio dir, not the worktree. Always start a separate server for the worktree using `autoPort: true` and pass the worktree path as the dir argument to `next dev`. |
+| `components/about-tv.tsx` | Complete material overhaul: TV body → titanium gray (`#3C3E44`, metalness 0.82), bezel → `#292B30` metalness 0.88, knobs/chrome → near-mirror metalness 0.96–0.98. Lime accent materials (emissive `#A3FF47`) on indicator LED, bottom strip, VHS spine, cassette screws/stripe, film reel spokes. CRT shader rewritten: idle state = visible phosphor-green noise with VHS lag bands + horizontal glitch + rolling interference band; hover state = flowing aurora in lime→teal→cyan. Screen glow point light tracks hover. Lighting: ambient 0.40 + key 3.5 + warm fill 1.6 + lime bounce 0.9 + white rim 0.7. Environment → "warehouse". |
+| `components/about.tsx` | Canvas moved to `position:absolute; inset:0` full-bleed. Left column = transparent spacer. Overlays: right-side gradient, CSS scanlines, film grain, radial vignette. `zIndex` stacking: canvas 0, gradients 1–2, content 3. |
 
 ---
 
