@@ -370,7 +370,7 @@ function TVBody({ hovered, setHovered, glowLightRef }: TVBodyProps) {
 function FloatingVHS() {
   return (
     <Float speed={1.2} rotationIntensity={0.4} floatIntensity={0.7}>
-      <group position={[-3.8, -1.0, 0.4]} rotation={[0.15, 0.45, -0.08]}>
+      <group position={[-4.8, -1.0, 1.2]} rotation={[0.15, 0.45, -0.08]}>
         <mesh material={VHS_BODY} castShadow>
           <boxGeometry args={[1.55, 0.96, 0.24]} />
         </mesh>
@@ -434,7 +434,7 @@ function FloatingCassette() {
 function FloatingFilmReel() {
   return (
     <Float speed={1.5} rotationIntensity={0.6} floatIntensity={0.5}>
-      <group position={[-1.8, -1.6, 0.5]} rotation={[0.8, 0.3, 0.2]}>
+      <group position={[1.0, -1.6, 0.5]} rotation={[0.8, 0.3, 0.2]}>
         {/* Main disc */}
         <mesh material={REEL_DISC} castShadow>
           <cylinderGeometry args={[0.62, 0.62, 0.06, 32]} />
