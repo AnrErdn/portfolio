@@ -28,6 +28,18 @@ export default function About() {
         <AboutTV />
       </div>
 
+      {/* Left-side haze — fades the canvas edge softly */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to right, #0D0D0D 0%, rgba(13,13,13,0.82) 7%, rgba(13,13,13,0.45) 18%, transparent 36%)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
       {/* Right-side gradient — darkens behind dossier text for readability */}
       <div
         aria-hidden
