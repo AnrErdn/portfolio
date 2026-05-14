@@ -1,19 +1,64 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import FadeUp from '@/components/fade-up'
 import { Typewriter } from '@/components/ui/typewriter'
+
+const ContactBalls = dynamic(() => import('@/components/contact-balls'), {
+  ssr: false,
+  loading: () => null,
+})
+
+// SVG fractal-noise grain encoded as data URL
+const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
 
 export default function Contact() {
   return (
     <section
       id="contact"
       style={{
+        position: 'relative',
         background: '#050505',
         padding: '120px 40px',
+        minHeight: '480px',
         textAlign: 'center',
+        overflow: 'hidden',
       }}
     >
-      <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+      {/* ── 3D physics balls — absolute background ── */}
+      <ContactBalls />
+
+      {/* ── Radial vignette — darkens edges, centres focus on content ── */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'radial-gradient(ellipse 70% 55% at 50% 50%, transparent 10%, rgba(5,5,5,0.55) 60%, rgba(5,5,5,0.88) 100%)',
+          pointerEvents: 'none',
+          zIndex: 2,
+        }}
+      />
+
+      {/* ── Film grain overlay ── */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: '-10%',
+          backgroundImage: GRAIN_SVG,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '200px 200px',
+          opacity: 0.055,
+          pointerEvents: 'none',
+          animation: 'grain-shift 0.35s steps(1) infinite',
+          zIndex: 3,
+        }}
+      />
+
+      {/* ── Content — sits above all overlays ── */}
+      <div style={{ position: 'relative', zIndex: 4, maxWidth: '640px', margin: '0 auto' }}>
         <FadeUp>
           {/* Pulse availability dot */}
           <div
@@ -63,23 +108,23 @@ export default function Contact() {
             }}
           >
             <Typewriter
-                text={["Let's build something.", "Let's ship great products.", "Let's create together."]}
-                speed={65}
-                deleteSpeed={35}
-                waitTime={2200}
-                initialDelay={400}
-                loop={true}
-                cursorChar="_"
-                cursorClassName=""
-                cursorAnimationVariants={{
-                  initial: { opacity: 0 },
-                  animate: {
-                    opacity: 1,
-                    transition: { duration: 0.01, repeat: Infinity, repeatDelay: 0.45, repeatType: 'reverse' },
-                  },
-                }}
-                className="text-inherit"
-              />
+              text={["Let's build something.", "Let's ship great products.", "Let's create together."]}
+              speed={65}
+              deleteSpeed={35}
+              waitTime={2200}
+              initialDelay={400}
+              loop={true}
+              cursorChar="_"
+              cursorClassName=""
+              cursorAnimationVariants={{
+                initial: { opacity: 0 },
+                animate: {
+                  opacity: 1,
+                  transition: { duration: 0.01, repeat: Infinity, repeatDelay: 0.45, repeatType: 'reverse' },
+                },
+              }}
+              className="text-inherit"
+            />
           </h2>
 
           {/* Subtext */}
