@@ -401,7 +401,7 @@ function FloatingVHS() {
 function FloatingCassette() {
   return (
     <Float speed={0.9} rotationIntensity={0.5} floatIntensity={0.8}>
-      <group position={[0.8, 1.6, 0.3]} rotation={[-0.2, -0.5, 0.15]}>
+      <group position={[-3.0, 1.8, 0.8]} rotation={[-0.2, -0.5, 0.15]}>
         <mesh material={CASSETTE_BODY} castShadow>
           <boxGeometry args={[1.1, 0.7, 0.14]} />
         </mesh>
