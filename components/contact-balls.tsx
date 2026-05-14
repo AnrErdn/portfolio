@@ -14,20 +14,26 @@ type BallDef = {
   emissiveIntensity?: number
 }
 
-// Mix of lime, gray, and dark/black balls — medium "baloony" sizes
+// 17 balls — slightly larger, mix of lime / gray / black
 const BALL_DEFS: BallDef[] = [
-  { r: 0.62, color: '#A3FF47', roughness: 0.05, metalness: 0.0,  emissive: '#A3FF47', emissiveIntensity: 0.08 },
-  { r: 0.46, color: '#C8C8C8', roughness: 0.07, metalness: 0.45 },
-  { r: 0.37, color: '#111111', roughness: 0.04, metalness: 0.55 },
-  { r: 0.70, color: '#A3FF47', roughness: 0.05, metalness: 0.0,  emissive: '#A3FF47', emissiveIntensity: 0.07 },
-  { r: 0.43, color: '#9A9A9A', roughness: 0.09, metalness: 0.32 },
-  { r: 0.54, color: '#0A0A0A', roughness: 0.03, metalness: 0.62 },
-  { r: 0.57, color: '#BBFF60', roughness: 0.06, metalness: 0.0,  emissive: '#BBFF60', emissiveIntensity: 0.05 },
-  { r: 0.35, color: '#D4D4D4', roughness: 0.07, metalness: 0.42 },
-  { r: 0.65, color: '#A3FF47', roughness: 0.05, metalness: 0.0,  emissive: '#A3FF47', emissiveIntensity: 0.06 },
-  { r: 0.41, color: '#808080', roughness: 0.11, metalness: 0.28 },
-  { r: 0.49, color: '#141414', roughness: 0.04, metalness: 0.50 },
-  { r: 0.39, color: '#C8FF80', roughness: 0.06, metalness: 0.0,  emissive: '#C8FF80', emissiveIntensity: 0.04 },
+  { r: 0.82, color: '#A3FF47', roughness: 0.05, metalness: 0.0,  emissive: '#A3FF47', emissiveIntensity: 0.08 },
+  { r: 0.60, color: '#C8C8C8', roughness: 0.07, metalness: 0.45 },
+  { r: 0.48, color: '#111111', roughness: 0.04, metalness: 0.55 },
+  { r: 0.92, color: '#A3FF47', roughness: 0.05, metalness: 0.0,  emissive: '#A3FF47', emissiveIntensity: 0.07 },
+  { r: 0.56, color: '#9A9A9A', roughness: 0.09, metalness: 0.32 },
+  { r: 0.70, color: '#0A0A0A', roughness: 0.03, metalness: 0.62 },
+  { r: 0.75, color: '#BBFF60', roughness: 0.06, metalness: 0.0,  emissive: '#BBFF60', emissiveIntensity: 0.05 },
+  { r: 0.46, color: '#D4D4D4', roughness: 0.07, metalness: 0.42 },
+  { r: 0.86, color: '#A3FF47', roughness: 0.05, metalness: 0.0,  emissive: '#A3FF47', emissiveIntensity: 0.06 },
+  { r: 0.53, color: '#808080', roughness: 0.11, metalness: 0.28 },
+  { r: 0.66, color: '#141414', roughness: 0.04, metalness: 0.50 },
+  { r: 0.51, color: '#C8FF80', roughness: 0.06, metalness: 0.0,  emissive: '#C8FF80', emissiveIntensity: 0.04 },
+  // Extra balls
+  { r: 0.70, color: '#A3FF47', roughness: 0.05, metalness: 0.0,  emissive: '#A3FF47', emissiveIntensity: 0.06 },
+  { r: 0.44, color: '#BEBEBE', roughness: 0.08, metalness: 0.38 },
+  { r: 0.60, color: '#0D0D0D', roughness: 0.04, metalness: 0.58 },
+  { r: 0.53, color: '#9AE840', roughness: 0.06, metalness: 0.0,  emissive: '#9AE840', emissiveIntensity: 0.04 },
+  { r: 0.47, color: '#707070', roughness: 0.10, metalness: 0.30 },
 ]
 
 type BallState = {
@@ -36,6 +42,19 @@ type BallState = {
   r: number
   floatFreq: number; floatPhase: number
   driftFreq: number; driftPhase: number
+}
+
+// Place a ball with guaranteed distance from the section centre
+function spawnAway(): [number, number] {
+  const minR = 2.8
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const x = (Math.random() - 0.5) * 12
+    const y = (Math.random() - 0.5) * 7
+    if (x * x + y * y >= minR * minR) return [x, y]
+  }
+  // Fallback: place on a random edge cluster
+  const side = Math.random() < 0.5 ? -1 : 1
+  return [side * (3 + Math.random() * 4), (Math.random() - 0.5) * 5]
 }
 
 function PhysicsBalls() {
@@ -59,18 +78,20 @@ function PhysicsBalls() {
   // Lazy init — only runs once on mount
   const ballStateRef = useRef<BallState[]>([])
   if (ballStateRef.current.length === 0) {
-    ballStateRef.current = BALL_DEFS.map((def) => ({
-      x: (Math.random() - 0.5) * 7,
-      y: (Math.random() - 0.5) * 4.5,
-      z: (Math.random() - 0.5) * 0.8,
-      vx: (Math.random() - 0.5) * 0.6,
-      vy: (Math.random() - 0.5) * 0.6,
-      r: def.r,
-      floatFreq:  0.22 + Math.random() * 0.48,
-      floatPhase: Math.random() * Math.PI * 2,
-      driftFreq:  0.14 + Math.random() * 0.28,
-      driftPhase: Math.random() * Math.PI * 2,
-    }))
+    ballStateRef.current = BALL_DEFS.map((def) => {
+      const [x, y] = spawnAway()
+      return {
+        x, y,
+        z: (Math.random() - 0.5) * 0.8,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        r: def.r,
+        floatFreq:  0.22 + Math.random() * 0.48,
+        floatPhase: Math.random() * Math.PI * 2,
+        driftFreq:  0.14 + Math.random() * 0.28,
+        driftPhase: Math.random() * Math.PI * 2,
+      }
+    })
   }
 
   const meshRefs = useRef<(THREE.Mesh | null)[]>(BALL_DEFS.map(() => null))
@@ -99,12 +120,12 @@ function PhysicsBalls() {
   }, [gl.domElement])
 
   useFrame((state, delta) => {
-    const dt   = Math.min(delta, 0.033)
-    const t    = state.clock.elapsedTime
-    const hw   = viewport.width  / 2
-    const hh   = viewport.height / 2
-    const mx   = mouseRef.current.x * hw
-    const my   = mouseRef.current.y * hh
+    const dt    = Math.min(delta, 0.033)
+    const t     = state.clock.elapsedTime
+    const hw    = viewport.width  / 2
+    const hh    = viewport.height / 2
+    const mx    = mouseRef.current.x * hw
+    const my    = mouseRef.current.y * hh
     const repel = mouseRef.current.active
 
     const balls = ballStateRef.current
@@ -125,10 +146,22 @@ function PhysicsBalls() {
       b.vx *= damp
       b.vy *= damp
 
+      // ── Centre-avoidance — keep balls off the text column ────────────────
+      // Soft repulsion from (0, 0): natural resting zone is the edges.
+      // Cursor repulsion can still push balls inward temporarily.
+      const cx2 = b.x * b.x + b.y * b.y
+      const CAR  = 3.0 // world-unit radius of the avoidance zone
+      if (cx2 < CAR * CAR && cx2 > 0.001) {
+        const cd    = Math.sqrt(cx2)
+        const force = (1 - cd / CAR) * 0.6
+        b.vx += (b.x / cd) * force * dt
+        b.vy += (b.y / cd) * force * dt
+      }
+
       // Mouse repulsion
       if (repel) {
-        const dx   = b.x - mx
-        const dy   = b.y - my
+        const dx    = b.x - mx
+        const dy    = b.y - my
         const dist2 = dx * dx + dy * dy
         const R     = 1.9 + b.r
         if (dist2 < R * R && dist2 > 0.001) {
@@ -157,10 +190,8 @@ function PhysicsBalls() {
           const nx      = dx / dist
           const ny      = dy / dist
           const overlap = (md - dist) * 0.5
-          // Positional correction
           a.x -= nx * overlap;  a.y -= ny * overlap
           b.x += nx * overlap;  b.y += ny * overlap
-          // Velocity impulse (coefficient of restitution 0.82)
           const dvn = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny
           if (dvn > 0) {
             const imp = dvn * 0.82
@@ -224,7 +255,6 @@ export default function ContactBalls() {
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       dpr={[1, 1.5]}
       onCreated={({ gl }) => {
-        // R3F v9 doesn't auto-size the canvas element CSS — force it to fill the container
         const el = gl.domElement
         el.style.display = 'block'
         el.style.width = '100%'
@@ -239,11 +269,8 @@ export default function ContactBalls() {
 
       {/* Lighting */}
       <ambientLight intensity={0.20} />
-      {/* Lime key light — top-right */}
       <pointLight position={[5, 6, 6]}  intensity={4.0} color="#A3FF47" />
-      {/* Warm fill — left */}
       <pointLight position={[-6, 1, 5]} intensity={2.0} color="#ffffff" />
-      {/* Cool rim — below */}
       <pointLight position={[1, -6, 4]} intensity={1.4} color="#7799ff" />
 
       <PhysicsBalls />
