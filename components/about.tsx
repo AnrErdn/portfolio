@@ -15,15 +15,76 @@ export default function About() {
   return (
     <section
       id="about"
-      className="about-section"
       style={{
+        position: 'relative',
         background: '#0D0D0D',
         padding: '120px 0',
         overflow: 'hidden',
+        minHeight: '700px',
       }}
     >
+      {/* Full-bleed 3D canvas — behind everything */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <AboutTV />
+      </div>
+
+      {/* Right-side gradient — darkens behind dossier text for readability */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to right, transparent 30%, rgba(13,13,13,0.65) 48%, rgba(13,13,13,0.90) 63%, #0D0D0D 80%)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {/* CSS scanline overlay — cinematic texture */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px)',
+          pointerEvents: 'none',
+          zIndex: 2,
+        }}
+      />
+
+      {/* Film grain */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: '-10%',
+          backgroundImage: GRAIN_SVG,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '200px 200px',
+          opacity: 0.055,
+          pointerEvents: 'none',
+          animation: 'grain-shift 0.4s steps(1) infinite',
+          zIndex: 2,
+        }}
+      />
+
+      {/* Radial vignette — centred on the TV (left side) */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse at 28% 50%, transparent 20%, rgba(13,13,13,0.45) 65%, rgba(13,13,13,0.88) 100%)',
+          pointerEvents: 'none',
+          zIndex: 2,
+        }}
+      />
+
+      {/* Content — sits above all overlays */}
       <div
         style={{
+          position: 'relative',
+          zIndex: 3,
           maxWidth: '1280px',
           margin: '0 auto',
           padding: '0 40px',
@@ -48,50 +109,10 @@ export default function About() {
         {/* Two-column grid */}
         <div className="about-grid" style={{ display: 'grid', gap: '0' }}>
 
-          {/* ── LEFT — retro TV scene ── */}
-          <FadeUp delay={40}>
-            <div
-              className="tv-wrapper"
-              style={{
-                position: 'relative',
-                height: '580px',
-                borderRadius: '2px',
-                overflow: 'hidden',
-              }}
-            >
-              <AboutTV />
+          {/* Left — transparent spacer; TV canvas shows through */}
+          <div className="about-tv-spacer" style={{ height: '580px' }} />
 
-              {/* Grain overlay on the TV scene */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  inset: '-10%',
-                  backgroundImage: GRAIN_SVG,
-                  backgroundRepeat: 'repeat',
-                  backgroundSize: '200px 200px',
-                  opacity: 0.045,
-                  pointerEvents: 'none',
-                  animation: 'grain-shift 0.4s steps(1) infinite',
-                  zIndex: 10,
-                }}
-              />
-
-              {/* Subtle vignette on edges of the TV scene */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'radial-gradient(ellipse at center, transparent 45%, rgba(13,13,13,0.75) 100%)',
-                  pointerEvents: 'none',
-                  zIndex: 9,
-                }}
-              />
-            </div>
-          </FadeUp>
-
-          {/* ── RIGHT — dossier profile ── */}
+          {/* Right — dossier profile */}
           <FadeUp delay={120}>
             <div
               className="dossier"
@@ -103,7 +124,7 @@ export default function About() {
                 paddingLeft: '64px',
               }}
             >
-              {/* Dossier header */}
+              {/* Header */}
               <div style={{ marginBottom: '32px' }}>
                 <h2
                   style={{
@@ -245,13 +266,13 @@ export default function About() {
           .about-grid {
             grid-template-columns: 1fr !important;
           }
-          .tv-wrapper {
-            height: 420px !important;
+          .about-tv-spacer {
+            height: 380px !important;
           }
           .dossier {
             height: auto !important;
             padding-left: 0 !important;
-            padding-top: 48px;
+            padding-top: 32px;
           }
         }
       `}</style>

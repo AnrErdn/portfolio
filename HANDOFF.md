@@ -1,8 +1,8 @@
 # Portfolio Handoff — Anar-Erdene Gantulga
 
-> Last updated: 2026-05-14
-> Session 5 by Claude Sonnet 4.6 — Hero matrix repeat, gooey text on work grid
-> Build status: ✅ Clean — `npm run build` passes, deployed to Vercel
+> Last updated: 2026-05-15
+> Session 6 by Claude Sonnet 4.6 — About section overhaul: metallic 3D TV, CRT noise→aurora shader, full-bleed canvas
+> Build status: ✅ Clean — TypeScript passes, deployed to Vercel
 > Repo: https://github.com/AnrErdn/portfolio (branch: main)
 
 ---
@@ -37,7 +37,25 @@ npx --prefix C:/Users/ganar/dev/portfolio tsc --project C:/Users/ganar/dev/portf
 
 ---
 
-## 3. Session 5 Changes (2026-05-14)
+## 3. Session 6 Changes (2026-05-15)
+
+### What was done
+Full overhaul of the About section: metallic 3D TV with chrome/titanium materials and lime accents, new CRT shader with visible noise-signal idle state and aurora hover state, floating objects repositioned and redesigned with metallic materials + lime details, canvas moved to full-bleed layout so objects can float freely across both columns, cinematic overlays added (CSS scanlines, film grain, radial vignette, right-side gradient for dossier readability).
+
+#### Modified files
+| File | What changed |
+|---|---|
+| `components/about-tv.tsx` | Complete material overhaul: TV body → titanium gray (`#3C3E44`, metalness 0.82), bezel → `#292B30` metalness 0.88, knobs/chrome → near-mirror metalness 0.96–0.98. Lime accent materials (emissive `#A3FF47`) on indicator LED, bottom strip, VHS spine, cassette screws/stripe, film reel spokes. CRT shader rewritten: idle state = visible phosphor-green noise with VHS lag bands + horizontal glitch + rolling interference band (no longer near-black at idle); hover state = flowing aurora in lime→teal→cyan (5 bands with sinusoidal wave motion, `exp(-dist * 21)` glow, shimmer). Screen glow point light tracks hover: green on idle, teal/cyan on hover. Lighting overhauled: ambient 0.40 + key 3.5 + warm fill 1.6 + lime bounce from below 0.9 + white rim 0.7. Environment changed from "night" to "warehouse" for metallic surface reflections. Floating objects repositioned: VHS `[-3.8, -1.0, 0.4]`, cassette `[3.2, 1.6, 0.3]`, film reel `[3.6, -1.6, 0.5]`. TV group shifted to `[-0.8, 0.12, 0]`. Camera: `fov: 62`, position `[0, 0.3, 7.5]`. Removed `useEffect`/texture loading (no longer needed — shader is fully procedural). |
+| `components/about.tsx` | Layout restructured: canvas moved from left grid column to `position:absolute; inset:0` full-bleed behind entire section. Left column replaced with transparent spacer (TV shows through). Removed `overflow:hidden` from tv-wrapper. Added overlays: right-side gradient (`transparent 30% → #0D0D0D 80%`) for dossier readability; CSS scanlines via `repeating-linear-gradient`; film grain; radial vignette centred at `28% 50%`. `zIndex` stacking: canvas 0, gradients 1–2, content 3. |
+
+#### Quirks discovered
+| Quirk | Details |
+|---|---|
+| Worktree preview server must specify dir | The preview tool's existing server (port 3001) runs from the main portfolio dir, not the worktree. Always start a separate server for the worktree using `autoPort: true` and pass the worktree path as the dir argument to `next dev`. |
+
+---
+
+## 3b. Session 5 Changes (2026-05-14)
 
 ### What was done
 Hero name matrix animation now loops every 7 seconds. Gooey text morphing animation added to work grid project titles.
