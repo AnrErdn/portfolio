@@ -401,7 +401,7 @@ function FloatingVHS() {
 function FloatingCassette() {
   return (
     <Float speed={0.9} rotationIntensity={0.5} floatIntensity={0.8}>
-      <group position={[-3.0, 1.8, 0.8]} rotation={[-0.2, -0.5, 0.15]}>
+      <group position={[0.8, 1.6, 0.3]} rotation={[-0.2, -0.5, 0.15]}>
         <mesh material={CASSETTE_BODY} castShadow>
           <boxGeometry args={[1.1, 0.7, 0.14]} />
         </mesh>
@@ -434,7 +434,7 @@ function FloatingCassette() {
 function FloatingFilmReel() {
   return (
     <Float speed={1.5} rotationIntensity={0.6} floatIntensity={0.5}>
-      <group position={[1.0, -1.6, 0.5]} rotation={[0.8, 0.3, 0.2]}>
+      <group position={[-1.8, -1.6, 0.5]} rotation={[0.8, 0.3, 0.2]}>
         {/* Main disc */}
         <mesh material={REEL_DISC} castShadow>
           <cylinderGeometry args={[0.62, 0.62, 0.06, 32]} />
