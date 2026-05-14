@@ -547,46 +547,44 @@ function TVScene() {
 
   return (
     <>
-      {/* Lighting */}
+      {/* Lighting — outside scene group so it illuminates everything evenly */}
       <ambientLight intensity={0.40} color="#D5E5FF" />
-      {/* Key — top right, cool blue-white */}
       <pointLight position={[5, 5, 4]} intensity={3.5} color="#C5D5F5"
         castShadow shadow-mapSize-width={512} shadow-mapSize-height={512} />
-      {/* Fill — warm left */}
       <pointLight position={[-5, 2, 3]} intensity={1.6} color="#FFE5B0" />
-      {/* Lime bounce from below — gives metallic surfaces that hint of green */}
       <pointLight position={[0, -4, 5]} intensity={0.9} color="#A3FF47" />
-      {/* Rim — back top */}
       <pointLight position={[0, 5, -2]} intensity={0.7} color="#FFFFFF" />
 
       <Suspense fallback={null}>
         <Environment preset="warehouse" background={false} />
       </Suspense>
 
-      <FloorShadow />
-      <FloatingVHS />
-      <FloatingCassette />
-      <FloatingFilmReel />
-      <DustParticles />
+      {/* Scene root — shift all objects left by -0.8 without touching angles */}
+      <group position={[-0.8, 0, 0]}>
+        <FloorShadow />
+        <FloatingVHS />
+        <FloatingCassette />
+        <FloatingFilmReel />
+        <DustParticles />
 
-      {/* TV — deep left, rotated to show right panel edge (3/4 view) */}
-      <group position={[-2.2, 0.12, 0]} rotation={[0, 0.38, 0]}>
-        <TVBody hovered={hovered} setHovered={setHovered} glowLightRef={glowLightRef} />
+        {/* TV — text is a child so it inherits the same Y rotation */}
+        <group position={[-2.2, 0.12, 0]} rotation={[0, 0.38, 0]}>
+          <TVBody hovered={hovered} setHovered={setHovered} glowLightRef={glowLightRef} />
+          <Suspense fallback={null}>
+            <Text
+              position={[0, -1.87, 0.82]}
+              fontSize={0.085}
+              color="rgba(163,255,71,0.55)"
+              font={undefined}
+              anchorX="center"
+              anchorY="middle"
+              letterSpacing={0.14}
+            >
+              {`CH.04  //  SIGNAL ACTIVE  //  ANAR-ERDENE`}
+            </Text>
+          </Suspense>
+        </group>
       </group>
-
-      <Suspense fallback={null}>
-        <Text
-          position={[-2.2, -1.75, 0.78]}
-          fontSize={0.085}
-          color="rgba(163,255,71,0.55)"
-          font={undefined}
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.14}
-        >
-          {`CH.04  //  SIGNAL ACTIVE  //  ANAR-ERDENE`}
-        </Text>
-      </Suspense>
     </>
   )
 }
