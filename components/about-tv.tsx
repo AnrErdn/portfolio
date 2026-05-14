@@ -19,6 +19,7 @@ const vert = /* glsl */`
 const frag = /* glsl */`
   uniform float uTime;
   uniform float uHover;
+  uniform float uChannel;
   varying vec2 vUv;
 
   float rand(vec2 co) {
@@ -30,46 +31,34 @@ const frag = /* glsl */`
     return uv + c * dot(c, c) * str;
   }
 
-  // Idle: phosphor noise signal with occasional glitch
+  // CH.01 — phosphor noise signal
   vec3 noiseSignal(vec2 uv, float t) {
     float n1    = rand(uv + fract(t * 19.7));
     float n2    = rand(uv * 1.4 + fract(t * 8.3));
     float n3    = rand(uv * 2.3 - fract(t * 13.5));
     float noise = n1 * 0.52 + n2 * 0.32 + n3 * 0.16;
-
-    // Phosphor green tint
     vec3 col = vec3(noise) * vec3(0.42, 0.95, 0.36);
-
-    // Rolling interference band — softer, slower
     float roll = uv.y - t * 0.22;
     float band = pow(max(0.0, sin(roll * 18.0)), 14.0);
     col += vec3(band * 0.35) * vec3(0.5, 1.0, 0.42);
-
-    // Rare horizontal glitch — rarer and smaller shift
     float gTrig  = step(0.97, rand(vec2(floor(t * 4.0), 0.61)));
     float gY     = rand(vec2(floor(t * 4.0), 0.83));
     float inG    = step(0.0, uv.y - gY) * step(0.0, gY + 0.045 - uv.y);
     float gShift = (rand(vec2(floor(t * 4.0), 0.38)) - 0.5) * 0.09;
     float gNoise = rand(vec2(uv.x + gShift, uv.y) + fract(t * 11.7));
     col = mix(col, vec3(gNoise) * vec3(0.48, 1.0, 0.4), inG * 0.55 * gTrig);
-
-    // Scanlines
     float scan = 0.5 + 0.5 * sin(uv.y * 500.0);
     col *= 0.76 + 0.24 * scan;
-
-    // Frame flicker
     col *= 0.91 + 0.09 * rand(vec2(floor(t * 8.0), 2.1));
-
     return col;
   }
 
-  // Hover: flowing aurora in lime → teal → cyan
+  // CH.02 — flowing aurora lime → teal → cyan
   vec3 auroraEffect(vec2 uv, float t) {
     vec3 col  = vec3(0.015, 0.03, 0.01);
     vec3 lime = vec3(0.64, 1.0,  0.28);
     vec3 teal = vec3(0.0,  1.0,  0.72);
     vec3 cyan = vec3(0.0,  0.87, 1.0);
-
     for (int i = 0; i < 5; i++) {
       float fi    = float(i);
       float baseY = 0.10 + fi * 0.175;
@@ -77,10 +66,8 @@ const frag = /* glsl */`
       float speed = 0.20 + fi * 0.07;
       float phase = fi   * 1.31;
       float amp   = 0.065 + fi * 0.02;
-
-      float wave = amp * sin(uv.x * freq       + t * speed       + phase)
+      float wave = amp * sin(uv.x * freq + t * speed + phase)
                  + amp * 0.45 * sin(uv.x * freq * 1.7 + t * speed * 0.6 + phase + 1.0);
-
       float dist  = abs(uv.y - baseY - wave);
       float glow  = exp(-dist * 21.0) * (0.55 + 0.45 * sin(t * 0.55 + fi * 1.8));
       float blend = fi / 4.0;
@@ -89,31 +76,80 @@ const frag = /* glsl */`
         : mix(teal, cyan, (blend - 0.5) * 2.0);
       col += bCol * glow;
     }
-
-    // Shimmer
     float shimmer = rand(uv + fract(t * 3.8)) * 0.035;
     col += vec3(shimmer * 0.5, shimmer, shimmer * 0.35);
-
-    // Subtle scanlines
     float scan = 0.5 + 0.5 * sin(uv.y * 480.0);
     col *= 0.87 + 0.13 * scan;
+    return col;
+  }
 
+  // CH.03 — oscilloscope waveforms on dark grid
+  vec3 oscilloscope(vec2 uv, float t) {
+    vec3 col  = vec3(0.01, 0.02, 0.01);
+    vec3 lime = vec3(0.64, 1.0,  0.28);
+    vec3 teal = vec3(0.0,  1.0,  0.72);
+    vec3 cyan = vec3(0.0,  0.87, 1.0);
+    float gx   = mod(uv.x * 8.0, 1.0);
+    float gy   = mod(uv.y * 6.0, 1.0);
+    float grid = max(step(0.96, gx), step(0.96, gy));
+    col += vec3(0.0, 0.10, 0.05) * grid;
+    for (int i = 0; i < 3; i++) {
+      float fi    = float(i);
+      float baseY = 0.22 + fi * 0.28;
+      float freq  = 2.5  + fi * 1.8;
+      float speed = 1.0  + fi * 0.5;
+      float amp   = 0.055 - fi * 0.01;
+      float wave  = amp * sin(uv.x * freq * 6.28318 + t * speed);
+      float dist  = abs(uv.y - baseY - wave);
+      float glow  = exp(-dist * 55.0) + exp(-dist * 18.0) * 0.3;
+      vec3  wCol  = fi == 0.0 ? lime : (fi == 1.0 ? teal : cyan);
+      col += wCol * glow * 0.95;
+    }
+    float scan = 0.5 + 0.5 * sin(uv.y * 480.0);
+    col *= 0.84 + 0.16 * scan;
+    col *= 0.93 + 0.07 * rand(vec2(floor(t * 7.0), 3.3));
+    return col;
+  }
+
+  // CH.04 — corrupted static with chromatic glitch blocks
+  vec3 glitchCorrupt(vec2 uv, float t) {
+    float blockY  = floor(uv.y * 14.0);
+    float glitchR = rand(vec2(blockY * 0.17, floor(t * 5.0)));
+    float isGlitch = step(0.55, glitchR);
+    float shift   = (rand(vec2(blockY * 0.31, floor(t * 5.0))) - 0.5) * 0.25;
+    vec2  guv     = vec2(fract(uv.x + isGlitch * shift), uv.y);
+    float nr = rand(vec2(guv.x + 0.018, guv.y) + fract(t * 29.0));
+    float ng = rand(guv                          + fract(t * 29.0));
+    float nb = rand(vec2(guv.x - 0.018, guv.y) + fract(t * 29.0));
+    vec3  col = vec3(nr, ng, nb) * vec3(0.55, 0.9, 0.45);
+    float flashY = floor(uv.y * 90.0);
+    float flash  = step(0.94, rand(vec2(flashY, floor(t * 9.0))));
+    col += vec3(0.4, 1.0, 0.35) * flash * 0.5;
+    float scan = 0.5 + 0.5 * sin(uv.y * 500.0);
+    col *= 0.72 + 0.28 * scan;
+    col *= 0.85 + 0.15 * rand(vec2(floor(t * 12.0), 5.1));
     return col;
   }
 
   void main() {
-    float barrelStr = mix(0.20, 0.06, uHover);
+    float barrelStr = mix(0.20, 0.08, uHover);
     vec2  uv        = barrel(vUv, barrelStr);
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
       gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
       return;
     }
 
-    vec3 noise  = noiseSignal(uv, uTime);
-    vec3 aurora = auroraEffect(uv, uTime);
-    vec3 col    = mix(noise, aurora, uHover);
+    vec3 c0 = noiseSignal(uv,   uTime);
+    vec3 c1 = auroraEffect(uv,  uTime);
+    vec3 c2 = oscilloscope(uv,  uTime);
+    vec3 c3 = glitchCorrupt(uv, uTime);
 
-    // Vignette
+    float ch = clamp(uChannel, 0.0, 3.0);
+    vec3 col = c0;
+    col = mix(col, c1, smoothstep(0.0, 1.0, clamp(ch,       0.0, 1.0)));
+    col = mix(col, c2, smoothstep(0.0, 1.0, clamp(ch - 1.0, 0.0, 1.0)));
+    col = mix(col, c3, smoothstep(0.0, 1.0, clamp(ch - 2.0, 0.0, 1.0)));
+
     float vig = pow(clamp(1.0 - length((vUv - 0.5) * 1.72), 0.0, 1.0), 0.48);
     col *= vig;
 
@@ -127,29 +163,46 @@ interface CRTScreenProps {
   w: number
   h: number
   hovered: boolean
+  channel: number
   glowLightRef: React.RefObject<THREE.PointLight>
 }
 
-function CRTScreen({ w, h, hovered, glowLightRef }: CRTScreenProps) {
+// Glow light HSL per channel: [noise-green, aurora-teal, scope-lime, glitch-red]
+const CH_GLOW: [number, number, number][] = [
+  [0.30, 0.85, 0.5],
+  [0.48, 0.85, 0.5],
+  [0.36, 0.90, 0.5],
+  [0.08, 0.80, 0.55],
+]
+
+function CRTScreen({ w, h, hovered, channel, glowLightRef }: CRTScreenProps) {
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
-      uTime:  { value: 0 },
-      uHover: { value: 0 },
+      uTime:    { value: 0 },
+      uHover:   { value: 0 },
+      uChannel: { value: 0 },
     },
     vertexShader:   vert,
     fragmentShader: frag,
   }), [])
 
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime()
-    material.uniforms.uTime.value    = t
+    material.uniforms.uTime.value    = clock.getElapsedTime()
     material.uniforms.uHover.value  += ((hovered ? 1 : 0) - material.uniforms.uHover.value) * 0.03
+    material.uniforms.uChannel.value += (channel - material.uniforms.uChannel.value) * 0.055
 
     if (glowLightRef.current) {
-      const h = material.uniforms.uHover.value
-      glowLightRef.current.intensity = 1.4 + h * 3.2
-      // idle: phosphor green  hover: teal/cyan
-      glowLightRef.current.color.setHSL(h > 0.5 ? 0.48 : 0.30, 0.85, 0.5)
+      const ch     = material.uniforms.uChannel.value
+      const idx    = Math.min(Math.floor(ch), 2)
+      const frac   = ch - idx
+      const [h1, s1, l1] = CH_GLOW[idx]
+      const [h2, s2, l2] = CH_GLOW[idx + 1]
+      glowLightRef.current.color.setHSL(
+        h1 + (h2 - h1) * frac,
+        s1 + (s2 - s1) * frac,
+        l1 + (l2 - l1) * frac,
+      )
+      glowLightRef.current.intensity = 1.4 + material.uniforms.uHover.value * 1.8
     }
   })
 
@@ -239,15 +292,59 @@ const REEL_LIME = new THREE.MeshStandardMaterial({
   emissiveIntensity: 0.28,
 })
 
+// ─── Channel knob ─────────────────────────────────────────────────────────────
+
+interface ChannelKnobProps {
+  position: [number, number, number]
+  onChannelChange: () => void
+}
+
+function ChannelKnob({ position, onChannelChange }: ChannelKnobProps) {
+  const groupRef   = useRef<THREE.Group>(null!)
+  const lightRef   = useRef<THREE.PointLight>(null!)
+  const targetRot  = useRef(0)
+  const hovRef     = useRef(false)
+
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.rotation.z += (targetRot.current - groupRef.current.rotation.z) * 0.14
+    }
+    if (lightRef.current) {
+      lightRef.current.intensity += ((hovRef.current ? 0.8 : 0) - lightRef.current.intensity) * 0.14
+    }
+  })
+
+  return (
+    <group
+      ref={groupRef}
+      position={position}
+      onClick={(e) => { e.stopPropagation(); targetRot.current -= Math.PI / 2; onChannelChange() }}
+      onPointerOver={(e) => { e.stopPropagation(); hovRef.current = true; document.body.style.cursor = 'pointer' }}
+      onPointerOut={() => { hovRef.current = false; document.body.style.cursor = 'auto' }}
+    >
+      <mesh material={KNOB_MAT} castShadow>
+        <cylinderGeometry args={[0.07, 0.08, 0.12, 20]} />
+      </mesh>
+      {/* Indicator line — always lime so it reads as the active knob */}
+      <mesh position={[0, 0.065, 0.015]} material={LIME_ACCENT}>
+        <boxGeometry args={[0.012, 0.04, 0.01]} />
+      </mesh>
+      <pointLight ref={lightRef} position={[0, 0, 0.18]} intensity={0} color="#A3FF47" distance={1.4} decay={2} />
+    </group>
+  )
+}
+
 // ─── TV body ─────────────────────────────────────────────────────────────────
 
 interface TVBodyProps {
-  hovered:    boolean
-  setHovered: (v: boolean) => void
-  glowLightRef: React.RefObject<THREE.PointLight>
+  hovered:         boolean
+  setHovered:      (v: boolean) => void
+  glowLightRef:    React.RefObject<THREE.PointLight>
+  channel:         number
+  onChannelChange: () => void
 }
 
-function TVBody({ hovered, setHovered, glowLightRef }: TVBodyProps) {
+function TVBody({ hovered, setHovered, glowLightRef, channel, onChannelChange }: TVBodyProps) {
   const W = 3.2, H = 2.5, D = 1.5
   const SW = 2.55, SH = 1.95
 
@@ -274,7 +371,7 @@ function TVBody({ hovered, setHovered, glowLightRef }: TVBodyProps) {
 
       {/* CRT screen — offset further forward to avoid z-fighting with bezel face at D*0.5+0.05 */}
       <group position={[0, 0.05, D * 0.5 + 0.09]}>
-        <CRTScreen w={SW} h={SH} hovered={hovered} glowLightRef={glowLightRef} />
+        <CRTScreen w={SW} h={SH} hovered={hovered} channel={channel} glowLightRef={glowLightRef} />
       </group>
 
       {/* Screen glow point light */}
@@ -299,8 +396,8 @@ function TVBody({ hovered, setHovered, glowLightRef }: TVBodyProps) {
         <boxGeometry args={[0.36, 0.9, 0.02]} />
       </mesh>
 
-      {/* Knobs */}
-      {[-0.18, 0, 0.18].map((dy, i) => (
+      {/* Knobs — bottom two static, top knob is channel selector */}
+      {[-0.18, 0].map((dy, i) => (
         <group key={i} position={[W * 0.5 - 0.22, -0.3 + dy, D * 0.5 + 0.07]}>
           <mesh material={KNOB_MAT} castShadow>
             <cylinderGeometry args={[0.07, 0.08, 0.12, 20]} />
@@ -310,6 +407,10 @@ function TVBody({ hovered, setHovered, glowLightRef }: TVBodyProps) {
           </mesh>
         </group>
       ))}
+      <ChannelKnob
+        position={[W * 0.5 - 0.22, -0.3 + 0.18, D * 0.5 + 0.07]}
+        onChannelChange={onChannelChange}
+      />
 
       {/* Lime indicator LED */}
       <mesh position={[W * 0.5 - 0.22, -0.3 + 0.30, D * 0.5 + 0.04]} material={LIME_ACCENT}>
@@ -585,9 +686,18 @@ function FloorShadow() {
 
 // ─── Full scene ───────────────────────────────────────────────────────────────
 
+const CHANNEL_LABELS = [
+  'CH.01  //  NOISE SIGNAL  //  ANAR-ERDENE',
+  'CH.02  //  AURORA ACTIVE  //  ANAR-ERDENE',
+  'CH.03  //  OSCILLOSCOPE  //  ANAR-ERDENE',
+  'CH.04  //  SIGNAL CORRUPT  //  ANAR-ERDENE',
+]
+
 function TVScene() {
   const [hovered, setHovered]  = useState(false)
+  const [channel, setChannel]  = useState(0)
   const glowLightRef           = useRef<THREE.PointLight>(null!)
+  const nextChannel            = () => setChannel(c => (c + 1) % 4)
 
   return (
     <>
@@ -613,7 +723,13 @@ function TVScene() {
 
         {/* TV — text is a child so it inherits the same Y rotation */}
         <group position={[-2.2, 0.12, 0]} rotation={[0, 0.38, 0]}>
-          <TVBody hovered={hovered} setHovered={setHovered} glowLightRef={glowLightRef} />
+          <TVBody
+            hovered={hovered}
+            setHovered={setHovered}
+            glowLightRef={glowLightRef}
+            channel={channel}
+            onChannelChange={nextChannel}
+          />
           <Suspense fallback={null}>
             <Text
               position={[0, -1.87, 0.82]}
@@ -624,7 +740,7 @@ function TVScene() {
               anchorY="middle"
               letterSpacing={0.14}
             >
-              {`CH.04  //  SIGNAL ACTIVE  //  ANAR-ERDENE`}
+              {CHANNEL_LABELS[channel]}
             </Text>
           </Suspense>
         </group>
