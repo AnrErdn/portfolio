@@ -595,7 +595,7 @@ function TVScene() {
 export default function AboutTV() {
   return (
     <Canvas
-      camera={{ position: [0, 0.3, 7.5], fov: 62 }}
+      camera={{ position: [1.2, 0.3, 7.5], fov: 62 }}
       shadows
       style={{ width: '100%', height: '100%' }}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
