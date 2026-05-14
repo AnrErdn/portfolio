@@ -125,6 +125,13 @@ body {
   }
 }
 
+/* Contact section — force the R3F canvas to fill its container */
+#contact canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* Scan decorator lines at section transitions */
 .scan-decorator {
   height: 1px;
