@@ -272,8 +272,8 @@ function TVBody({ hovered, setHovered, glowLightRef }: TVBodyProps) {
         <boxGeometry args={[SW + 0.12, SH + 0.12, 0.12]} />
       </mesh>
 
-      {/* CRT screen */}
-      <group position={[0, 0.05, D * 0.5 + 0.04]}>
+      {/* CRT screen — offset further forward to avoid z-fighting with bezel face at D*0.5+0.05 */}
+      <group position={[0, 0.05, D * 0.5 + 0.09]}>
         <CRTScreen w={SW} h={SH} hovered={hovered} glowLightRef={glowLightRef} />
       </group>
 
