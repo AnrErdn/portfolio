@@ -30,11 +30,12 @@ const frag = /* glsl */`
     return uv + c * dot(c, c) * str;
   }
 
-  // Idle: phosphor noise signal with VHS lag and horizontal glitch
+  // Idle: phosphor noise signal with subtle VHS lag and occasional glitch
   vec3 noiseSignal(vec2 uv, float t) {
-    float lagRow   = floor(uv.y * 14.0);
-    float isLag    = step(0.87, rand(vec2(lagRow * 0.07, floor(t * 2.0) * 0.09)));
-    float lagShift = (rand(vec2(lagRow * 0.13, floor(t * 2.0) * 0.07)) - 0.5) * 0.10;
+    // Fewer, wider lag bands — less scratchy
+    float lagRow   = floor(uv.y * 6.0);
+    float isLag    = step(0.91, rand(vec2(lagRow * 0.07, floor(t * 1.5) * 0.09)));
+    float lagShift = (rand(vec2(lagRow * 0.13, floor(t * 1.5) * 0.07)) - 0.5) * 0.055;
     vec2  luv      = vec2(uv.x + isLag * lagShift, uv.y);
 
     float n1    = rand(luv + fract(t * 19.7));
@@ -45,18 +46,18 @@ const frag = /* glsl */`
     // Phosphor green tint
     vec3 col = vec3(noise) * vec3(0.42, 0.95, 0.36);
 
-    // Rolling interference band
-    float roll = uv.y - t * 0.27;
-    float band = pow(max(0.0, sin(roll * 30.0)), 10.0);
-    col += vec3(band * 0.5) * vec3(0.5, 1.0, 0.42);
+    // Rolling interference band — softer, slower
+    float roll = uv.y - t * 0.22;
+    float band = pow(max(0.0, sin(roll * 18.0)), 14.0);
+    col += vec3(band * 0.35) * vec3(0.5, 1.0, 0.42);
 
-    // Random horizontal glitch band
-    float gTrig  = step(0.94, rand(vec2(floor(t * 5.0), 0.61)));
-    float gY     = rand(vec2(floor(t * 5.0), 0.83));
-    float inG    = step(0.0, uv.y - gY) * step(0.0, gY + 0.055 - uv.y);
-    float gShift = (rand(vec2(floor(t * 5.0), 0.38)) - 0.5) * 0.18;
+    // Rare horizontal glitch — rarer and smaller shift
+    float gTrig  = step(0.97, rand(vec2(floor(t * 4.0), 0.61)));
+    float gY     = rand(vec2(floor(t * 4.0), 0.83));
+    float inG    = step(0.0, uv.y - gY) * step(0.0, gY + 0.045 - uv.y);
+    float gShift = (rand(vec2(floor(t * 4.0), 0.38)) - 0.5) * 0.09;
     float gNoise = rand(vec2(uv.x + gShift, uv.y) + fract(t * 11.7));
-    col = mix(col, vec3(gNoise) * vec3(0.48, 1.0, 0.4), inG * 0.8 * gTrig);
+    col = mix(col, vec3(gNoise) * vec3(0.48, 1.0, 0.4), inG * 0.55 * gTrig);
 
     // Scanlines
     float scan = 0.5 + 0.5 * sin(uv.y * 500.0);
@@ -254,7 +255,7 @@ interface TVBodyProps {
 
 function TVBody({ hovered, setHovered, glowLightRef }: TVBodyProps) {
   const W = 3.2, H = 2.5, D = 1.5
-  const SW = 2.1, SH = 1.6
+  const SW = 2.55, SH = 1.95
 
   return (
     <group
@@ -568,8 +569,8 @@ function TVScene() {
       <FloatingFilmReel />
       <DustParticles />
 
-      {/* TV — shifted left so dossier sits in the right half */}
-      <group position={[-1.6, 0.12, 0]}>
+      {/* TV — shifted left, rotated to show left panel edge (3/4 view) */}
+      <group position={[-1.6, 0.12, 0]} rotation={[0, 0.38, 0]}>
         <TVBody hovered={hovered} setHovered={setHovered} glowLightRef={glowLightRef} />
       </group>
 
@@ -595,7 +596,7 @@ function TVScene() {
 export default function AboutTV() {
   return (
     <Canvas
-      camera={{ position: [2.2, 0.3, 7.5], fov: 62 }}
+      camera={{ position: [3.0, 0.3, 7.5], fov: 62 }}
       shadows
       style={{ width: '100%', height: '100%' }}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
