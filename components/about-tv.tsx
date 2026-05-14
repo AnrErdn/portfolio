@@ -132,32 +132,26 @@ interface CRTScreenProps {
 }
 
 function CRTScreen({ w, h, hovered, glowLightRef }: CRTScreenProps) {
-  const matRef = useRef<THREE.ShaderMaterial>(null!)
-
-  const texture = useMemo(() => {
-    // Try loading the real photo; fall back to placeholder canvas
-    const loader = new THREE.TextureLoader()
-    const tex = loader.load(
-      '/photo.jpg',
-      () => { tex.needsUpdate = true },
-      undefined,
-      () => { /* 404 — placeholder already set via .image replacement below */ }
-    )
-    // Immediately set placeholder so the screen isn't blank while loading
-    tex.image = makePlaceholder().image
-    tex.needsUpdate = true
-    return tex
-  }, [])
+  const placeholder = useMemo(() => makePlaceholder(), [])
 
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
-      uTexture: { value: texture },
+      uTexture: { value: placeholder },
       uTime:    { value: 0 },
       uHover:   { value: 0 },
     },
     vertexShader: vert,
     fragmentShader: frag,
-  }), [texture])
+  }), [placeholder])
+
+  // Attempt to load the real photo and swap it in when ready
+  useEffect(() => {
+    const loader = new THREE.TextureLoader()
+    loader.load('/photo.jpg', (loaded) => {
+      material.uniforms.uTexture.value = loaded
+    })
+    // On 404 the placeholder stays — no error handling needed
+  }, [material])
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime()
