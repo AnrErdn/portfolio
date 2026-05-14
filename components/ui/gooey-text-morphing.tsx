@@ -24,80 +24,78 @@ export function GooeyText({
   const filterId = `gooey-${uid}`;
 
   React.useEffect(() => {
-    let textIndex = texts.length - 1;
-    let time = new Date();
-    let morph = 0;
-    let cooldown = cooldownTime;
-    let animId: number;
+    let textIndex = 0;
+    let phase: "cooldown" | "morph" = "cooldown";
+    let elapsed = 0;
 
-    // Show first text immediately instead of waiting for the initial cooldown
-    if (text1Ref.current && text2Ref.current) {
-      text1Ref.current.textContent = texts[textIndex % texts.length];
-      text1Ref.current.style.opacity = "0%";
-      text2Ref.current.textContent = texts[(textIndex + 1) % texts.length];
-      text2Ref.current.style.opacity = "100%";
-    }
-
-    const setMorph = (fraction: number) => {
-      if (text1Ref.current && text2Ref.current) {
-        text2Ref.current.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
-        text2Ref.current.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
-        fraction = 1 - fraction;
-        text1Ref.current.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
-        text1Ref.current.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
-      }
+    const applyMorph = (fraction: number) => {
+      if (!text1Ref.current || !text2Ref.current) return;
+      // fraction 0→1: text2 fades out, text1 fades in
+      const blur2 = Math.min(8 / Math.max(fraction, 0.001) - 8, 100);
+      text2Ref.current.style.filter = `blur(${blur2}px)`;
+      text2Ref.current.style.opacity = String(Math.pow(fraction, 0.4));
+      const inv = 1 - fraction;
+      const blur1 = Math.min(8 / Math.max(inv, 0.001) - 8, 100);
+      text1Ref.current.style.filter = `blur(${blur1}px)`;
+      text1Ref.current.style.opacity = String(Math.pow(inv, 0.4));
     };
 
-    const doCooldown = () => {
-      morph = 0;
-      if (text1Ref.current && text2Ref.current) {
-        text2Ref.current.style.filter = "";
-        text2Ref.current.style.opacity = "100%";
-        text1Ref.current.style.filter = "";
-        text1Ref.current.style.opacity = "0%";
-      }
+    const showText2 = () => {
+      if (!text1Ref.current || !text2Ref.current) return;
+      text2Ref.current.style.filter = "";
+      text2Ref.current.style.opacity = "1";
+      text1Ref.current.style.filter = "";
+      text1Ref.current.style.opacity = "0";
     };
 
-    const doMorph = () => {
-      morph -= cooldown;
-      cooldown = 0;
-      let fraction = morph / morphTime;
-      if (fraction > 1) {
-        cooldown = cooldownTime;
-        fraction = 1;
-      }
-      setMorph(fraction);
+    const loadTexts = () => {
+      if (!text1Ref.current || !text2Ref.current) return;
+      // text2 = current (visible), text1 = next (will morph in)
+      text2Ref.current.textContent = texts[textIndex % texts.length];
+      text1Ref.current.textContent = texts[(textIndex + 1) % texts.length];
     };
 
-    function animate() {
-      animId = requestAnimationFrame(animate);
-      const newTime = new Date();
-      const shouldIncrementIndex = cooldown > 0;
-      const dt = (newTime.getTime() - time.getTime()) / 1000;
-      time = newTime;
-      cooldown -= dt;
+    loadTexts();
+    showText2();
 
-      if (cooldown <= 0) {
-        if (shouldIncrementIndex) {
+    // Track phase boundaries as absolute timestamps so we're immune to
+    // any dt/clock throttling in background tabs or iframes
+    let phaseStart = performance.now();
+
+    const id = setInterval(() => {
+      const now = performance.now();
+      elapsed = (now - phaseStart) / 1000;
+
+      if (phase === "cooldown") {
+        if (elapsed >= cooldownTime) {
           textIndex = (textIndex + 1) % texts.length;
-          if (text1Ref.current && text2Ref.current) {
-            text1Ref.current.textContent = texts[textIndex % texts.length];
-            text2Ref.current.textContent = texts[(textIndex + 1) % texts.length];
-          }
+          loadTexts();
+          phase = "morph";
+          phaseStart = now;
+          elapsed = 0;
         }
-        doMorph();
       } else {
-        doCooldown();
+        const fraction = Math.min(elapsed / morphTime, 1);
+        if (fraction >= 1) {
+          if (text1Ref.current && text2Ref.current) {
+            text2Ref.current.textContent = text1Ref.current.textContent;
+          }
+          showText2();
+          phase = "cooldown";
+          phaseStart = now;
+          elapsed = 0;
+        } else {
+          applyMorph(1 - fraction);
+        }
       }
-    }
+    }, 16);
 
-    animate();
-    return () => cancelAnimationFrame(animId);
+    return () => clearInterval(id);
   }, [texts, morphTime, cooldownTime]);
 
   return (
     <div className={cn("relative", className)}>
-      <svg className="absolute h-0 w-0" aria-hidden="true" focusable="false">
+      <svg style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }} aria-hidden="true" focusable="false">
         <defs>
           <filter id={filterId}>
             <feColorMatrix
